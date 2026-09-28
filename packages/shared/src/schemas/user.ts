@@ -15,6 +15,11 @@ export const UpdateApiKeySchema = z.object({
   apiKey: z.string().min(10)
 });
 
+export const UserSchema = RegisterRequestSchema;
+export const LoginSchema = LoginRequestSchema;
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type UpdateApiKey = z.infer<typeof UpdateApiKeySchema>;
+export type User = z.infer<typeof UserSchema>;
+
