@@ -1,0 +1,14 @@
+{
+  "name": "squizme-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:server": "pnpm --filter @squizme/server dev",
+    "dev:client": "pnpm --filter @squizme/client dev",
+    "dev": "pnpm --parallel dev:server dev:client",
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
