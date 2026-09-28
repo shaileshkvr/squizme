@@ -1,4 +1,4 @@
-# SDD ledger — plan: docs/superpowers/plans/2026-09-28-quiz-builder.md
+# SDD ledger — plan: antigravity/implementation_plan.md
 
 ## Pre-flight Conflict Scan
 
@@ -15,3 +15,5 @@
 | Task 13 & Tasks 8, 9 | Dockerfile / Server dist & client dist | Clean — multi-stage build references correct dist paths | Clean |
 
 Scan result: Clean, zero cross-task interface conflicts detected.
+
+Task 1: complete (commits 54fe8c1..2486547, review clean)

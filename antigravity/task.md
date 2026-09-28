@@ -1,6 +1,6 @@
 # Squizme Task Progress Tracking
 
-- [ ] Task 1: Monorepo workspace initialization and root configuration
+- [x] Task 1: Monorepo workspace initialization and root configuration
 - [ ] Task 2: Shared package with Zod schemas and TypeScript types
 - [ ] Task 3: Backend database setup and encryption utilities (`apps/server/src/db`)
 - [ ] Task 4: Auth and user profile modules (`apps/server/src/modules/auth`, `users`)
