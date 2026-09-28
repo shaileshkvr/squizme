@@ -240,3 +240,19 @@ When users create a quiz, the prompt template injects:
 - **Request validation:** All Fastify routes validate incoming payloads against shared Zod schemas.
 - **File upload security:** File types are verified via MIME sniffing and file extensions; files are processed in-memory or in temporary buffers without executing any external binary.
 - **Graceful degradation:** If Gemini hits rate limits (HTTP 429), the server returns a clean user-facing error message with retry timing.
+
+---
+
+## 10. File documentation mirroring convention
+
+To ensure deep maintainability and complete standalone understanding, the `docs/` folder mirrors the project root structure. For every source or configuration file created in the project, a corresponding `<filename>.md` is created in the matching nested path under `docs/`.
+
+### Documentation file requirements
+Each `<filename>.md` must address:
+1. **Purpose:** Why this file exists and its domain responsibility.
+2. **Impact of absence:** What breaks or fails if this file is missing or removed.
+3. **Internal logic and interfaces:** All exported and internal functions, classes, types, routes, schemas, including signatures, input/output structures, and runtime mechanics.
+4. **Dependency graph:**
+   - **Depends on:** Direct list of files/modules it imports, using `@/` relative paths from project root.
+   - **Depended on by:** List of files/modules that import it, using `@/` relative paths from project root.
+
