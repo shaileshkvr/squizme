@@ -4,7 +4,7 @@
   "scripts": {
     "dev:server": "pnpm --filter @squizme/server dev",
     "dev:client": "pnpm --filter @squizme/client dev",
-    "dev": "pnpm --parallel dev:server dev:client",
+    "dev": "pnpm --parallel --filter @squizme/server --filter @squizme/client dev",
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive run test"
   },
