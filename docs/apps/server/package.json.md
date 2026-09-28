@@ -11,7 +11,7 @@ The server application cannot be managed as a pnpm workspace package, dependenci
 - `build`: Compiles TypeScript source files to JavaScript via `tsc`.
 - `start`: Starts the compiled production server with `node dist/index.js`.
 - `test`: Executes unit and integration test suites using Vitest (`vitest run`).
-- `db:push`: Pushes Drizzle ORM schema migrations directly to the MySQL database via `drizzle-kit push`.
+- `db:push`: Pushes Drizzle ORM schema migrations directly to the PostgreSQL database via `drizzle-kit push`.
 
 ### Dependency graph
 - Depends on:
@@ -25,8 +25,8 @@ The server application cannot be managed as a pnpm workspace package, dependenci
   - `drizzle-orm`
   - `fastify`
   - `mammoth`
-  - `mysql2`
   - `pdf-parse`
+  - `postgres`
   - `zod`
 - Depended on by:
   - Root monorepo build and development pipelines

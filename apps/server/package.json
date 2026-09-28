@@ -11,18 +11,18 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@google/genai": "^0.2.0",
     "@fastify/cors": "^10.0.2",
     "@fastify/jwt": "^9.0.4",
     "@fastify/multipart": "^9.0.3",
+    "@google/genai": "^0.2.0",
     "@squizme/shared": "workspace:*",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.40.0",
     "fastify": "^5.2.1",
     "mammoth": "^1.9.0",
-    "mysql2": "^3.13.0",
     "pdf-parse": "^1.1.1",
+    "postgres": "^3.4.9",
     "zod": "^3.24.2"
   },
   "devDependencies": {

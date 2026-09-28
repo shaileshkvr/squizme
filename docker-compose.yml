@@ -1,21 +1,21 @@
-version: '3.8'
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: squizme-mysql
+  postgres:
+    image: postgres:16-alpine
+    container_name: squizme-postgres
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: squizme
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: squizme
     ports:
-      - '3306:3306'
+      - '5432:5432'
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d squizme"]
       interval: 5s
       timeout: 3s
       retries: 5
 
 volumes:
-  mysql_data:
+  postgres_data:

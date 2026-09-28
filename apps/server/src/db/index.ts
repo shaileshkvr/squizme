@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from './schema.js';
 
-const connectionUri = process.env.DATABASE_URL || 'mysql://root:rootpassword@localhost:3306/squizme';
+const connectionUri = process.env.DATABASE_URL || 'postgresql://postgres:rootpassword@localhost:5432/squizme';
 
-export const poolConnection = mysql.createPool(connectionUri);
-export const db = drizzle(poolConnection, { schema, mode: 'default' });
+export const client = postgres(connectionUri);
+export const db = drizzle(client, { schema });
