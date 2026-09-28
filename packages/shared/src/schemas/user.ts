@@ -1,0 +1,20 @@
+import { z } from 'zod';
+
+export const RegisterRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(2).max(100)
+});
+
+export const LoginRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1)
+});
+
+export const UpdateApiKeySchema = z.object({
+  apiKey: z.string().min(10)
+});
+
+export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
+export type LoginRequest = z.infer<typeof LoginRequestSchema>;
+export type UpdateApiKey = z.infer<typeof UpdateApiKeySchema>;
