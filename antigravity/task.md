@@ -4,7 +4,7 @@
 - [x] Task 2: Shared package with Zod schemas and TypeScript types
 - [x] Task 3: Backend database setup and encryption utilities (`apps/server/src/db`)
 - [x] Task 4: Auth and user profile modules (`apps/server/src/modules/auth`, `users`)
-- [ ] Task 5: Document extraction module (`apps/server/src/modules/documents`)
+- [x] Task 5: Document extraction module (`apps/server/src/modules/documents`)
 - [ ] Task 6: Gemini quiz generator engine (`apps/server/src/modules/generator`)
 - [ ] Task 7: Quizzes, attempts, and auto-grading modules (`apps/server/src/modules/quizzes`, `attempts`)
 - [ ] Task 8: Server entry point and HTTP bootstrap (`apps/server/src/index.ts`)
