@@ -19,10 +19,12 @@ ENV NODE_ENV=production
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/ ./packages/
 COPY apps/server/package.json ./apps/server/package.json
+COPY apps/client/package.json ./apps/client/package.json
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --from=builder /app/apps/client/dist ./apps/server/public
 
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm --filter @squizme/server... install --prod --frozen-lockfile
 
 EXPOSE 3001
 CMD ["node", "apps/server/dist/index.js"]

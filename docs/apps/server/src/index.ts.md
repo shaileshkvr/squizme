@@ -20,6 +20,7 @@ The backend service cannot start, accept HTTP connections, or dispatch requests 
   - `@fastify/multipart`
   - `@fastify/static`
   - `dotenv`
+  - `@/apps/server/src/db/bootstrap.ts`
   - `@/apps/server/src/plugins/auth.ts`
   - `@/apps/server/src/modules/auth/routes.ts`
   - `@/apps/server/src/modules/users/routes.ts`

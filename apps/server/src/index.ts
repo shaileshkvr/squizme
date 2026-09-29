@@ -11,6 +11,7 @@ import { userRoutes } from './modules/users/routes.js';
 import { generatorRoutes } from './modules/generator/routes.js';
 import { quizRoutes } from './modules/quizzes/routes.js';
 import { attemptRoutes } from './modules/attempts/routes.js';
+import { bootstrapDatabase } from './db/bootstrap.js';
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ const server = Fastify({
 });
 
 async function main() {
+  await bootstrapDatabase();
+
   await server.register(cors, {
     origin: true,
     credentials: true
