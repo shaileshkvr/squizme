@@ -13,4 +13,4 @@
 - [x] Task 11: Quiz builder studio with scope warning and depth controls (`apps/client/src/pages/QuizBuilder.tsx`)
 - [x] Task 12: Quiz runner and scorecard review (`apps/client/src/pages/QuizPlayer.tsx`, `AttemptReview.tsx`)
 - [x] Task 13: Containerization and Docker deployment (`Dockerfile`, `docker-compose.yml`)
-- [ ] Task 14: End-to-end verification and test suite execution
+- [x] Task 14: End-to-end verification and test suite execution
