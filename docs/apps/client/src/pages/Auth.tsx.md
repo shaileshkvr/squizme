@@ -8,6 +8,7 @@ Users cannot authenticate, log into existing accounts (including the seeded test
 
 ### Key Features
 - **Dual Flow**: Single card toggles between registration (with display name) and login.
+- **Signed-in Protection**: Automatically redirects already-authenticated users to `/`.
 - **Teal / Slate Theme**: High contrast inputs and buttons supporting dark and light themes.
 - **Error Feedback**: Accessible alert callout for validation and invalid credential messages.
 

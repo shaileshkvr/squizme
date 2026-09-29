@@ -18,6 +18,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const GuestRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 export const AppContent: React.FC = () => {
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
 
@@ -26,7 +32,7 @@ export const AppContent: React.FC = () => {
       <Navbar onOpenApiKeyModal={() => setApiKeyModalOpen(true)} />
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8">
         <Routes>
-          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth" element={<GuestRoute><AuthPage /></GuestRoute>} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

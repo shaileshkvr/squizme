@@ -8,14 +8,16 @@ The single page application lacks route definitions, navigation shell, footer li
 
 ### Components
 - `ProtectedRoute`: Guards authenticated routes (`/`, `/quizzes/new`, `/quizzes/:id/play`, `/attempts/:id`), redirecting unauthenticated users to `/auth`.
-- Public routes: `/auth`, `/about`, and `/privacy`.
+- `GuestRoute`: Guards unauthenticated routes (`/auth`), redirecting signed-in users immediately to `/`.
+- Public routes: `/about` and `/privacy`.
 - `AppContent`: Renders `Navbar`, page content via `<Routes>`, footer links, and the global `ApiKeyModal`.
-- `App`: Wraps `AppContent` with `BrowserRouter` and `AuthProvider`.
+- `App`: Wraps `AppContent` with `BrowserRouter`, `ThemeProvider`, and `AuthProvider`.
 
 ### Dependency graph
 - Depends on:
   - `react-router-dom`
   - `@/apps/client/src/context/AuthContext.tsx`
+  - `@/apps/client/src/context/ThemeContext.tsx`
   - `@/apps/client/src/components/Navbar.tsx`
   - `@/apps/client/src/components/ApiKeyModal.tsx`
   - `@/apps/client/src/pages/Dashboard.tsx`
