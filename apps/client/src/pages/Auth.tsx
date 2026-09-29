@@ -41,18 +41,20 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-12 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-      <div className="flex items-center justify-center gap-2 mb-6 text-indigo-600">
-        <Sparkles className="w-8 h-8" />
-        <h1 className="text-2xl font-bold">Squizme</h1>
+    <div className="max-w-md mx-auto mt-6 sm:mt-12 bg-white dark:bg-slate-900 p-7 sm:p-9 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+      <div className="flex items-center justify-center gap-2.5 mb-6 text-teal-600 dark:text-teal-400">
+        <div className="p-2 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800">
+          <Sparkles className="w-6 h-6" />
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Squizme</h1>
       </div>
 
-      <h2 className="text-lg font-semibold text-center mb-6">
-        {isRegister ? 'Create an account' : 'Sign in to your account'}
+      <h2 className="text-lg sm:text-xl font-bold text-center text-slate-900 dark:text-white mb-6">
+        {isRegister ? 'Create your account' : 'Sign in to your account'}
       </h2>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+        <div className="flex items-center gap-2.5 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 p-3.5 rounded-xl border border-red-200 dark:border-red-800 mb-5">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -61,56 +63,62 @@ export const AuthPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {isRegister && (
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
+            <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
+              Your Name
+            </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
             />
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+          <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
+            Email Address
+          </label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+          <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5">
+            Password (min 8 chars)
+          </label>
           <input
             type="password"
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-lg transition disabled:opacity-50 cursor-pointer"
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm sm:text-base py-3 rounded-xl transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 cursor-pointer shadow-sm mt-2"
         >
           {loading ? 'Please wait...' : isRegister ? 'Register' : 'Sign in'}
         </button>
       </form>
 
-      <div className="text-center mt-6">
+      <div className="text-center mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
         <button
           onClick={() => {
             setIsRegister(!isRegister);
             setError('');
           }}
-          className="text-xs text-indigo-600 hover:underline cursor-pointer"
+          className="text-sm font-medium text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
         >
           {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Register"}
         </button>

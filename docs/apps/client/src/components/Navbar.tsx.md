@@ -1,22 +1,31 @@
 # Documentation: @/apps/client/src/components/Navbar.tsx
 
 ### Purpose
-Header navigation bar displaying the Squizme brand, public navigation links (About, Privacy), remaining quota badge (or BYO key status indicator), quick quiz creation button, and session controls.
+Provides application-wide top navigation, scroll-aware "Create Quiz" visibility, theme switching (dark/light), and an interactive account profile popup with password changes, name edits, quota indicators, and local API key management.
 
 ### What happens without it
-Users cannot view their quota status, navigate across views, trigger the API key configuration modal, or log out.
+Users cannot toggle themes, manage their profile/password, access key settings, or navigate between the quiz studio and documentation policies.
 
-### Key elements
-- Brand logo linking to home.
-- Navigation links for About and Privacy & Policies.
-- Quota indicator pill: Shows "Free: X/2 left" or "BYO Key Active". Clicking triggers `onOpenApiKeyModal`.
-- "Create Quiz" shortcut button.
-- Logout action button.
+### Key Features
+- **Dynamic Create Quiz Button**: Appears only on subpages or when scrolled past the top hero banner on `/`.
+- **Right-Aligned Policy Links**: Direct links to `/about` and `/privacy`.
+- **Theme Switcher**: Instant toggle between dark and light themes with persistence.
+- **Account Popup**:
+  - Displays user name and email.
+  - Inline display name editing (`updateName`).
+  - Expandable password change subform with validation (`changePassword`).
+  - Google Gemini API key configuration trigger (`ApiKeyModal`).
+  - Quota status indicator (free remaining vs. BYO key active).
+  - Reddish accented Sign Out button (`text-red-600 dark:text-red-400`).
+  - Click-outside and Escape key dismissal.
+- **Zero Sign-Up Leak**: Removes sign-up triggers when an active session is detected.
 
 ### Dependency graph
 - Depends on:
+  - `react`
   - `react-router-dom`
   - `lucide-react`
   - `@/apps/client/src/context/AuthContext.tsx`
+  - `@/apps/client/src/context/ThemeContext.tsx`
 - Depended on by:
   - `@/apps/client/src/App.tsx`

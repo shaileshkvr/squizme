@@ -26,59 +26,88 @@ export const AttemptReviewPage: React.FC = () => {
     loadScorecard();
   }, [id, token]);
 
-  if (loading || !data) return <div className="text-center py-12 text-slate-500">Loading results...</div>;
+  if (loading || !data) {
+    return (
+      <div className="text-center py-16 text-slate-500 dark:text-slate-400 text-sm sm:text-base">
+        Loading scorecard results...
+      </div>
+    );
+  }
 
   const { attempt, items } = data;
+  const percentage = Number(attempt.percentage).toFixed(0);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-7">
       {/* Hero Score Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-sm space-y-3">
-        <Award className="w-12 h-12 text-indigo-600 mx-auto" />
-        <h1 className="text-2xl font-bold text-slate-900">Quiz Completed!</h1>
-        <div className="text-4xl font-extrabold text-indigo-600">{Number(attempt.percentage).toFixed(0)}%</div>
-        <p className="text-sm text-slate-600">
-          You scored {attempt.scoreAwarded} out of {attempt.totalPoints} points.
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 text-center shadow-sm space-y-4 transition-colors">
+        <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 flex items-center justify-center mx-auto">
+          <Award className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+        </div>
+
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Quiz Completed!
+        </h1>
+
+        <div className="text-5xl font-black text-teal-600 dark:text-teal-400 tracking-tight">
+          {percentage}%
+        </div>
+
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
+          You scored <strong className="text-slate-900 dark:text-white">{attempt.scoreAwarded}</strong> out of{' '}
+          <strong className="text-slate-900 dark:text-white">{attempt.totalPoints}</strong> points.
         </p>
-        <div className="pt-2 flex justify-center gap-3">
+
+        <div className="pt-3 flex flex-wrap justify-center gap-3">
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700"
+            className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-all active:scale-95 shadow-sm"
           >
-            <Home className="w-4 h-4" /> Dashboard
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
           </Link>
           <Link
             to={`/quizzes/${attempt.quizId}/play`}
-            className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+            className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl transition-all duration-200 hover:shadow-md active:scale-95 shadow-sm"
           >
-            <RotateCcw className="w-4 h-4" /> Retake Quiz
+            <RotateCcw className="w-4 h-4" />
+            <span>Retake Quiz</span>
           </Link>
         </div>
       </div>
 
       {/* Question Breakdown */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-slate-900">Question Review</h2>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Detailed Question Breakdown</h2>
         {items.map((item: any, idx: number) => (
-          <div key={item.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
+          <div
+            key={item.id}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-3 transition-colors"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Question {idx + 1}</span>
+              <span className="text-xs uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">
+                Question {idx + 1}
+              </span>
               {item.isCorrect ? (
-                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                   <CheckCircle className="w-4 h-4" /> Correct (+{item.pointsEarned} pts)
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-xs font-semibold text-red-600">
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2.5 py-1 rounded-full border border-red-200 dark:border-red-800">
                   <XCircle className="w-4 h-4" /> Incorrect (0 pts)
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-100">
-              <strong className="block text-slate-700 mb-0.5">Submitted Answer:</strong>
-              {Array.isArray(item.submittedAnswer) ? item.submittedAnswer.join(', ') : item.submittedAnswer || '(Blank)'}
+
+            <div className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
+              <strong className="block text-slate-900 dark:text-white mb-1">Submitted Answer:</strong>
+              {Array.isArray(item.submittedAnswer)
+                ? item.submittedAnswer.join(', ')
+                : item.submittedAnswer || '(Blank)'}
             </div>
-            <p className="text-xs text-slate-600">
-              <strong className="text-slate-700">Explanation:</strong> {item.gradedFeedback}
+
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <strong className="text-slate-900 dark:text-white">Explanation:</strong> {item.gradedFeedback}
             </p>
           </div>
         ))}

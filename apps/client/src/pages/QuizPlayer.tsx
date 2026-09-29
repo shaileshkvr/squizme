@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Send } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Send, BookOpen, Clock } from 'lucide-react';
 
 export const QuizPlayerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +40,13 @@ export const QuizPlayerPage: React.FC = () => {
     initQuiz();
   }, [id, token]);
 
-  if (loading || !quiz) return <div className="text-center py-12 text-slate-500">Loading quiz...</div>;
+  if (loading || !quiz) {
+    return (
+      <div className="text-center py-16 text-slate-500 dark:text-slate-400 text-sm sm:text-base">
+        Loading quiz session...
+      </div>
+    );
+  }
 
   const currentQ = quiz.questions[currentIndex];
   const isLearningMode = quiz.settings?.mode === 'learning';
@@ -94,23 +100,28 @@ export const QuizPlayerPage: React.FC = () => {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Quiz Header Bar */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         <div>
-          <h2 className="font-bold text-slate-900">{quiz.title}</h2>
-          <span className="text-xs text-slate-500">Question {currentIndex + 1} of {quiz.questions.length}</span>
+          <h2 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white line-clamp-1">{quiz.title}</h2>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            Question {currentIndex + 1} of {quiz.questions.length}
+          </span>
         </div>
-        <span className="text-xs px-2.5 py-1 rounded bg-slate-100 font-medium text-slate-700 capitalize">
+        <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300 capitalize">
+          {isLearningMode ? <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> : <Clock className="w-3.5 h-3.5 text-amber-500" />}
           {quiz.settings?.mode} Mode
         </span>
       </div>
 
       {/* Question Card */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-        <h3 className="text-base font-semibold text-slate-900">{currentQ.prompt}</h3>
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 transition-colors">
+        <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white leading-relaxed">
+          {currentQ.prompt}
+        </h3>
 
-        {/* Dynamic Question Interface */}
+        {/* Dynamic Question Option Interface */}
         {currentQ.type === 'short_answer' ? (
           <div>
             <input
@@ -119,11 +130,11 @@ export const QuizPlayerPage: React.FC = () => {
               value={(currentAnswer as string) || ''}
               disabled={isChecked && isLearningMode}
               onChange={(e) => setAnswers({ ...answers, [currentQ.id]: e.target.value })}
-              className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm sm:text-base px-4 py-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
             />
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {currentQ.options.map((opt: any) => {
               const isSelected = Array.isArray(currentAnswer)
                 ? currentAnswer.includes(opt.id)
@@ -133,12 +144,16 @@ export const QuizPlayerPage: React.FC = () => {
                 <button
                   key={opt.id}
                   onClick={() => handleSelectOption(opt.id)}
-                  className={`w-full text-left p-3.5 rounded-lg border text-sm transition flex items-center justify-between cursor-pointer ${
-                    isSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-900 font-medium' : 'border-slate-200 hover:border-slate-300'
+                  className={`w-full text-left p-4 rounded-xl border text-sm sm:text-base transition-all duration-150 flex items-center justify-between cursor-pointer min-h-[50px] active:scale-[0.99] ${
+                    isSelected
+                      ? 'border-teal-600 dark:border-teal-500 bg-teal-50/70 dark:bg-teal-950/40 text-teal-950 dark:text-teal-100 font-semibold shadow-sm'
+                      : 'border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 text-slate-800 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-800/40'
                   }`}
                 >
-                  <span>{opt.text}</span>
-                  {isSelected && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                  <span className="leading-relaxed">{opt.text}</span>
+                  {isSelected && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-teal-600 dark:bg-teal-400 shrink-0 ml-3" />
+                  )}
                 </button>
               );
             })}
@@ -147,22 +162,32 @@ export const QuizPlayerPage: React.FC = () => {
 
         {/* Learning Mode Instant Feedback */}
         {isLearningMode && (
-          <div>
+          <div className="pt-2">
             {!isChecked ? (
               <button
                 onClick={handleCheckAnswer}
-                disabled={!currentAnswer}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
+                disabled={!currentAnswer || (Array.isArray(currentAnswer) && currentAnswer.length === 0)}
+                className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
               >
                 Check Answer
               </button>
             ) : (
-              <div className={`p-4 rounded-lg text-xs space-y-1.5 ${isCorrect ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' : 'bg-red-50 text-red-900 border border-red-200'}`}>
-                <div className="flex items-center gap-1.5 font-bold">
-                  {isCorrect ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-red-600" />}
+              <div
+                className={`p-4 sm:p-5 rounded-xl text-sm space-y-2 border ${
+                  isCorrect
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
+                    : 'bg-red-50 dark:bg-red-950/40 text-red-950 dark:text-red-200 border-red-200 dark:border-red-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 font-bold text-base">
+                  {isCorrect ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  )}
                   <span>{isCorrect ? 'Correct!' : 'Incorrect'}</span>
                 </div>
-                <p>{currentQ.explanation}</p>
+                <p className="leading-relaxed">{currentQ.explanation}</p>
               </div>
             )}
           </div>
@@ -170,11 +195,11 @@ export const QuizPlayerPage: React.FC = () => {
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <button
           onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
           disabled={currentIndex === 0}
-          className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-30 cursor-pointer"
+          className="flex items-center gap-1.5 text-sm sm:text-base font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer transition p-2"
         >
           <ArrowLeft className="w-4 h-4" /> Previous
         </button>
@@ -182,17 +207,19 @@ export const QuizPlayerPage: React.FC = () => {
         {currentIndex < quiz.questions.length - 1 ? (
           <button
             onClick={() => setCurrentIndex(currentIndex + 1)}
-            className="flex items-center gap-1 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg cursor-pointer"
+            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl transition-all duration-200 hover:shadow active:scale-95 cursor-pointer"
           >
-            Next <ArrowRight className="w-4 h-4" />
+            <span>Next</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         ) : (
           <button
             onClick={handleSubmitQuiz}
             disabled={submitting}
-            className="flex items-center gap-1 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg cursor-pointer"
+            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer disabled:opacity-50"
           >
-            <Send className="w-4 h-4" /> {submitting ? 'Submitting...' : 'Submit Quiz'}
+            <Send className="w-4 h-4" />
+            <span>{submitting ? 'Submitting...' : 'Submit Quiz'}</span>
           </button>
         )}
       </div>

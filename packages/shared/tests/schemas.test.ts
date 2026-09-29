@@ -38,6 +38,18 @@ describe('Shared Schemas', () => {
     expect(parsed.success).toBe(false);
   });
 
+  it('rejects quiz generation request with fewer than 5 questions', () => {
+    const invalidRequest = {
+      prompt: 'Physics basics',
+      questionCount: 4,
+      difficulty: 'medium',
+      depth: 'foundational',
+      allowedTypes: ['single_choice']
+    };
+    const parsed = GenerateQuizRequestSchema.safeParse(invalidRequest);
+    expect(parsed.success).toBe(false);
+  });
+
   it('validates user registration schema', () => {
     const valid = {
       email: 'user@example.com',

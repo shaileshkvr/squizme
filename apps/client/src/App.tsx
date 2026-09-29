@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { DashboardPage } from './pages/Dashboard';
@@ -21,9 +22,9 @@ export const AppContent: React.FC = () => {
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <Navbar onOpenApiKeyModal={() => setApiKeyModalOpen(true)} />
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8">
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -35,19 +36,19 @@ export const AppContent: React.FC = () => {
         </Routes>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-6 mt-12">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 py-8 mt-12 transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
           <div>
             <span>© {new Date().getFullYear()} Squizme. Built with Google Gemini & TypeScript.</span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link to="/about" className="hover:text-indigo-600 transition">About</Link>
-            <Link to="/privacy" className="hover:text-indigo-600 transition">Privacy & Policies</Link>
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <Link to="/about" className="hover:text-teal-600 dark:hover:text-teal-400 transition font-medium">About</Link>
+            <Link to="/privacy" className="hover:text-teal-600 dark:hover:text-teal-400 transition font-medium">Privacy & Policies</Link>
             <a
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-indigo-600 transition"
+              className="hover:text-teal-600 dark:hover:text-teal-400 transition font-medium"
             >
               Google AI Studio
             </a>
@@ -63,9 +64,11 @@ export const AppContent: React.FC = () => {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

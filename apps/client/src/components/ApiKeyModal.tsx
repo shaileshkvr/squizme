@@ -40,7 +40,6 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
   const handleRemove = async () => {
     if (!confirm('Remove your custom API key from this device? You will revert to host quota.')) return;
     removeLocalApiKey();
-    // Also clear server-side fallback if any exists
     if (token) {
       await fetch('/api/users/api-key', {
         method: 'DELETE',
@@ -51,96 +50,110 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative border border-slate-100">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+    >
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-7 relative border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 transition-colors">
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          aria-label="Close modal"
+        >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2 mb-4">
-          <Key className="w-6 h-6 text-indigo-600" />
-          <h2 className="text-xl font-bold text-slate-900">Google Gemini API Key</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800">
+            <Key className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Google Gemini API Key</h2>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Bring Your Own Key (BYOK) Configuration</span>
+          </div>
         </div>
 
-        <p className="text-sm text-slate-600 mb-4">
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-5 leading-relaxed">
           Google AI Studio provides 100% free Gemini API keys without requiring a credit card. Connect your key to unlock unlimited quizzes with up to 50 questions each.
         </p>
 
         {/* 3-Step Walkthrough */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4 space-y-3">
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">How to get your free key in 30 seconds</h3>
-          <ol className="text-xs text-slate-700 space-y-2 list-decimal list-inside">
+        <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 mb-5 space-y-2.5">
+          <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">How to get your free key in 30 seconds</h3>
+          <ol className="text-sm text-slate-700 dark:text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
             <li>
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-indigo-600 hover:underline font-medium inline-flex items-center gap-1"
+                className="text-teal-600 dark:text-teal-400 hover:underline font-semibold inline-flex items-center gap-1"
               >
-                Open Google AI Studio <ExternalLink className="w-3 h-3" />
+                Open Google AI Studio <ExternalLink className="w-3.5 h-3.5" />
               </a>{' '}
               and sign in with your Google account.
             </li>
             <li>Click the blue <strong>"Create API key"</strong> button.</li>
-            <li>Copy the key and paste it into the box below.</li>
+            <li>Copy the key and paste it below.</li>
           </ol>
         </div>
 
         {/* Privacy & Storage Guarantee Notice */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 text-xs text-emerald-900 flex gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-5 text-sm text-emerald-900 dark:text-emerald-200 flex gap-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <strong className="font-semibold block text-emerald-950">Local-Only Encrypted Storage</strong>
-            <p className="text-emerald-800 leading-relaxed">
-              Your API key is never stored on our servers—it is saved locally on your device encrypted with AES-GCM. We collect zero data on you and your queries. The Google Gemini model itself processes requests under its own terms, which are independent of us as a company.
+            <strong className="font-semibold block text-emerald-950 dark:text-emerald-100">Local-Only Encrypted Storage</strong>
+            <p className="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+              Your API key is never stored on our servers—it is saved locally on your device encrypted with AES-256-GCM. We collect zero data on you and your queries. Requests are evaluated by Google Gemini under its own independent AI terms.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Paste Gemini API Key</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Paste Gemini API Key</label>
             <input
               type="password"
               placeholder="AIzaSy..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               required
-              className="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full text-sm px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
             />
           </div>
 
           {status === 'error' && (
-            <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 p-3 rounded-xl border border-red-200 dark:border-red-800">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {status === 'success' && (
-            <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-200">
+            <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800">
               <CheckCircle className="w-4 h-4 shrink-0" />
               <span>API key encrypted and saved locally on your device!</span>
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <a
               href="https://www.youtube.com/results?search_query=how+to+create+google+gemini+api+key"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1"
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 transition"
             >
-              <Video className="w-3.5 h-3.5" />
-              Watch 1-min video tutorial
+              <Video className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              Watch 1-min tutorial video
             </a>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
               {(user?.hasCustomKey || hasLocalApiKey()) && (
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="text-xs text-red-600 hover:text-red-700 px-3 py-2 cursor-pointer"
+                  className="text-sm text-red-600 dark:text-red-400 hover:underline px-3 py-2 cursor-pointer transition"
                 >
                   Remove Key
                 </button>
@@ -148,9 +161,9 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
               <button
                 type="submit"
                 disabled={status === 'saving'}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
+                className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow active:scale-95 disabled:opacity-50 cursor-pointer"
               >
-                {status === 'saving' ? 'Saving...' : 'Save Locally'}
+                {status === 'saving' ? 'Encrypting & Saving...' : 'Save Locally'}
               </button>
             </div>
           </div>

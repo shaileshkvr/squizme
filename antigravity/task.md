@@ -14,3 +14,10 @@
 - [x] Task 12: Quiz runner and scorecard review (`apps/client/src/pages/QuizPlayer.tsx`, `AttemptReview.tsx`)
 - [x] Task 13: Containerization and Docker deployment (`Dockerfile`, `docker-compose.yml`)
 - [x] Task 14: End-to-end verification and test suite execution
+- [x] Task 15: Color palette overhaul (fresh Teal/Emerald/Slate) & Dark Mode foundation (`ThemeContext.tsx`, `index.css`)
+- [x] Task 16: Typography & font scaling (eliminate `text-xs`, upgrade to `text-sm`/`text-base` everywhere)
+- [x] Task 17: Navbar redesign, scroll/route detection, user profile popup, API key modal trigger, and password change
+- [x] Task 18: Quiz Builder refactor (slider centering, min 5 questions, move scope policy below create button, input refinements)
+- [x] Task 19: Full responsive design overhaul across all pages and mobile screens
+- [x] Task 20: Tactile animations, hover elevations, and active states (`emil-design-eng`)
+- [x] Task 21: Full unit test verification, build verification, and 1:1 documentation mirroring in `docs/`

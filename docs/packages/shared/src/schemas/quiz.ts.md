@@ -10,7 +10,7 @@ The server and client cannot validate question structures or generation options 
 - `QuestionTypeSchema`: Valid question formats (`single_choice`, `multiple_choice`, `true_false`, `short_answer`).
 - `QuestionSchema`: Full question entity structure with options, correct answer array, and explanation.
 - `QuizSettingsSchema`: Configuration for time limits, learning/exam mode, and question shuffling.
-- `GenerateQuizRequestSchema`: Constraints for quiz generation requests (capped at 50 questions max).
+- `GenerateQuizRequestSchema`: Constraints for quiz generation requests (bounded between 5 and 50 questions).
 
 ### Dependency graph
 - Depends on: `zod`

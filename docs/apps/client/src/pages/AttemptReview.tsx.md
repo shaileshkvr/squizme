@@ -1,18 +1,20 @@
 # Documentation: @/apps/client/src/pages/AttemptReview.tsx
 
 ### Purpose
-Presents the detailed scorecard, percentage score, pass/fail status, and per-question rationale review after completing a quiz.
+Renders the end-of-attempt scorecard, summarizing total points, percentage scored, and a question-by-question review with explanations and submitted answers.
 
 ### What happens without it
-Quiz takers cannot inspect their final score, see which questions were right or wrong, or read pedagogical explanations.
+Users cannot inspect their final quiz performance, see which questions were missed, or learn from corrective feedback.
 
-### Key features
-- Hero score banner showing total points and percentage.
-- Retake Quiz and Dashboard navigation buttons.
-- Question-by-question breakdown showing user's answer vs correct feedback and explanation.
+### Key Features
+- **Hero Performance Card**: Bold score percentage and points tally with quick actions to return to dashboard or retake the quiz.
+- **Answer Comparison**: Clear rendering of submitted answers against correctness badges.
+- **Dark Mode Support**: High-contrast slate card styling with accessible text colors.
+- **Teal / Emerald Accents**: Visual feedback on score and passing status.
 
 ### Dependency graph
 - Depends on:
+  - `react`
   - `react-router-dom`
   - `lucide-react`
   - `@/apps/client/src/context/AuthContext.tsx`

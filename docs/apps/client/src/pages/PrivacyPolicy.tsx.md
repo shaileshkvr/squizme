@@ -1,17 +1,17 @@
 # Documentation: @/apps/client/src/pages/PrivacyPolicy.tsx
 
 ### Purpose
-Publicly accessible privacy and data policies page detailing plain-English rules on local device API key storage, zero user and query data collection, and independent AI model terms.
+Publishes official data collection, encryption, and handling policies, specifically documenting local-only AES-GCM encrypted API key storage, zero query telemetry, and the independent third-party Google Gemini model terms.
 
 ### What happens without it
-Users have no transparent reference explaining that API keys are stored locally on their device, that Squizme does not harvest queries, and that Google's model operates under independent terms.
+Users and self-hosters lack formal disclosures explaining how credentials, uploaded study files, and AI requests are processed and protected.
 
-### Sections
-- Local-Only API Key Storage: Keys are encrypted with client-side AES-256-GCM and stored on the device, never on servers.
-- Zero User & Query Data Collection: Squizme collects zero query or topical data from users.
-- Third-Party AI Model Disclaimer: Clarifies that Google Gemini's data handling is between the user and Google, with no affiliation to Squizme as a company.
-- Ephemeral Document Processing: 20MB in-memory parsing without permanent file retention.
-- Storage & Tracking: Strict functional session persistence in localStorage with no marketing cookies.
+### Key Policy Areas
+- **Local-Only Encrypted Keys**: Detailed explanation of client-side encryption without database persistence.
+- **Zero Telemetry**: Guarantee that user queries, documents, and prompts are never collected or sold.
+- **Third-Party Model Disclaimer**: Explicit legal distinction between Squizme and independent Google AI Studio data handling.
+- **Ephemeral Processing**: In-memory parsing with immediate buffer teardown.
+- **Dark Mode & Teal Accent**: Readable typography with accessible contrast in light and dark modes.
 
 ### Dependency graph
 - Depends on:

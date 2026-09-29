@@ -10,6 +10,8 @@ User registration, authentication requests, and API key updates cannot be valida
 - `RegisterRequestSchema` / `RegisterRequest`: Validates user registration fields (email format, password min length 8, name length 2-100).
 - `LoginRequestSchema` / `LoginRequest`: Validates user login credentials (email format, non-empty password).
 - `UpdateApiKeySchema` / `UpdateApiKey`: Validates user Gemini API key updates (minimum 10 characters).
+- `ChangePasswordSchema` / `ChangePasswordRequest`: Validates current password and new password (min 8 chars).
+- `UpdateProfileSchema` / `UpdateProfileRequest`: Validates display name updates (2-100 characters).
 
 ### Dependency graph
 - Depends on: `zod`

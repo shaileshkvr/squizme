@@ -34,7 +34,7 @@ export const QuizSettingsSchema = z.object({
 export const GenerateQuizRequestSchema = z.object({
   prompt: z.string().optional(),
   researchEnabled: z.boolean().default(false),
-  questionCount: z.number().int().min(1).max(50).default(10),
+  questionCount: z.number().int().min(5).max(50).default(10),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
   depth: z.enum(['foundational', 'in_depth']).default('foundational'),
   allowedTypes: z.array(QuestionTypeSchema).min(1).default(['single_choice', 'true_false']),

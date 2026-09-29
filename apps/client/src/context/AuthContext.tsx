@@ -16,6 +16,8 @@ export interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   refreshProfile: () => Promise<void>;
+  updateName: (newName: string) => Promise<void>;
+  changePassword: (currentPass: string, newPass: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,8 +65,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const updateName = async (newName: string) => {
+    if (!token) return;
+    const res = await fetch('/api/users/profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: newName })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update name');
+    setUser((prev) => (prev ? { ...prev, name: newName } : null));
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!token) return;
+    const res = await fetch('/api/users/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to change password');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshProfile, updateName, changePassword }}>
       {children}
     </AuthContext.Provider>
   );
