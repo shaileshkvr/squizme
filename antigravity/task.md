@@ -5,7 +5,7 @@
 - [x] Task 3: Backend database setup and encryption utilities (`apps/server/src/db`)
 - [x] Task 4: Auth and user profile modules (`apps/server/src/modules/auth`, `users`)
 - [x] Task 5: Document extraction module (`apps/server/src/modules/documents`)
-- [ ] Task 6: Gemini quiz generator engine (`apps/server/src/modules/generator`)
+- [x] Task 6: Gemini quiz generator engine (`apps/server/src/modules/generator`)
 - [ ] Task 7: Quizzes, attempts, and auto-grading modules (`apps/server/src/modules/quizzes`, `attempts`)
 - [ ] Task 8: Server entry point and HTTP bootstrap (`apps/server/src/index.ts`)
 - [ ] Task 9: Frontend scaffolding and design system (`apps/client`)
