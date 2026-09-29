@@ -15,5 +15,6 @@ Components cannot inspect the active user, determine remaining quota limits, or 
 ### Dependency graph
 - Depends on:
   - `react`
+  - `@/apps/client/src/utils/crypto.ts`
 - Depended on by:
   - All page and navbar components in `@/apps/client`

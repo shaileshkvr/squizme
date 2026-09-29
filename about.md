@@ -18,15 +18,15 @@ Squizme is an AI-powered quiz generation platform built as a TypeScript modular 
 - **Important Files**: [`packages/shared/src/schemas/quiz.ts`](file:///home/shailesh/Projects/squizme/packages/shared/src/schemas/quiz.ts), [`packages/shared/src/schemas/user.ts`](file:///home/shailesh/Projects/squizme/packages/shared/src/schemas/user.ts).
 - **Caveats**: ESM packages consumed across Vite and Node require explicit file extension paths in exports.
 
-### 3. Database Layer & Encryption
-- **Purpose**: Persists users, quizzes, questions, and attempt submissions reliably in PostgreSQL with AES-256-GCM encryption for stored user API keys.
-- **Implementation**: Built with Drizzle ORM (`drizzle-orm/pg-core` and `postgres` driver). The schema tracks user identities, custom API keys, quizzes, questions, attempt states, and answers.
-- **Important Files**: [`apps/server/src/db/schema.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/db/schema.ts), [`apps/server/src/utils/encryption.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/utils/encryption.ts).
-- **Caveats**: `ENCRYPTION_KEY` must be exactly a 64-character hex string (32 bytes).
+### 3. Database Layer & Local-First Key Encryption
+- **Purpose**: Persists users, quizzes, questions, and attempt submissions reliably in PostgreSQL. Personal BYO Gemini API keys are encrypted with AES-GCM and stored locally on the user's device, never persisted to server databases.
+- **Implementation**: Built with Drizzle ORM (`drizzle-orm/pg-core` and `postgres` driver) for PostgreSQL. Client-side encryption is powered by the Web Crypto API (`window.crypto.subtle`).
+- **Important Files**: [`apps/server/src/db/schema.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/db/schema.ts), [`apps/client/src/utils/crypto.ts`](file:///home/shailesh/Projects/squizme/apps/client/src/utils/crypto.ts).
+- **Caveats**: Squizme collects zero tracking data on user queries. Google's model may process or log prompts independently under Google's own AI terms.
 
 ### 4. Authentication & Profile Management
-- **Purpose**: Handles user identity, JWT issuance, and BYO API key storage.
-- **Implementation**: Password hashing with `bcrypt` (10 rounds), token issuance with `@fastify/jwt`, and endpoints for profile retrieval and key management.
+- **Purpose**: Handles user identity, JWT issuance, and session authentication.
+- **Implementation**: Password hashing with `bcrypt` (10 rounds), token issuance with `@fastify/jwt`, and endpoints for profile retrieval and quota tracking.
 - **Important Files**: [`apps/server/src/modules/auth/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/auth/service.ts), [`apps/server/src/modules/users/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/users/service.ts).
 - **Caveats**: Passwords require a minimum length of 8 characters.
 
@@ -38,9 +38,9 @@ Squizme is an AI-powered quiz generation platform built as a TypeScript modular 
 
 ### 6. Gemini Generation Engine
 - **Purpose**: Generates high-quality structured quizzes based on prompt or document context.
-- **Implementation**: Connects via `@google/genai` to Gemini 2.5 Flash using tool calls (`add_single_choice_question`, `add_multiple_choice_question`, `add_true_false_question`, `add_short_answer_question`). It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key.
+- **Implementation**: Connects via `@google/genai` to Gemini 2.5 Flash using tool calls (`add_single_choice_question`, `add_multiple_choice_question`, `add_true_false_question`, `add_short_answer_question`). It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key (passed directly from local device storage in volatile memory).
 - **Important Files**: [`apps/server/src/modules/generator/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/service.ts), [`apps/server/src/modules/generator/tools.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/tools.ts).
-- **Caveats**: Free host tier is capped at 2 generations per account. When exhausted, the server returns HTTP 403 `QUOTA_EXHAUSTED`.
+- **Caveats**: Free host tier is capped at 2 generations per account. When exhausted, the server returns HTTP 403 `QUOTA_EXHAUSTED`. External model logging by Google is independent of Squizme.
 
 ### 7. Quiz Runner & Auto-Grading Engine
 - **Purpose**: Evaluates student responses across question formats and computes scorecard statistics.

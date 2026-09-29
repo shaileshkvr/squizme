@@ -1,7 +1,7 @@
 # Documentation: @/about.md
 
 ### Purpose
-Overview document explaining project purpose, core features, architecture summaries, important files, and operational caveats.
+Overview document explaining project purpose, core features, architecture summaries, local-first API key storage, important files, and operational caveats.
 
 ### What happens without it
 Developers onboarding to the project lack high-level architectural context and implementation notes.
@@ -9,7 +9,7 @@ Developers onboarding to the project lack high-level architectural context and i
 ### Sections
 - Monorepo Foundation & Workspace Setup
 - Shared Data Contracts (`@squizme/shared`)
-- Database Layer & Encryption
+- Database Layer & Local-First Key Encryption
 - Authentication & Profile Management
 - Document Ingestion Guardrails
 - Gemini Generation Engine

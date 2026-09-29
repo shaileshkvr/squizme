@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Upload, FileText, Search, Sparkles, AlertTriangle, Clock, BookOpen } from 'lucide-react';
+import { getLocalApiKey } from '../utils/crypto';
 
 export const QuizBuilderPage: React.FC = () => {
   const { user, token } = useAuth();
@@ -43,6 +44,14 @@ export const QuizBuilderPage: React.FC = () => {
     setLoadingStage(mode === 'document' ? 'Extracting document text...' : 'Researching topic concepts...');
 
     try {
+      const localKey = await getLocalApiKey();
+      const customHeaders: Record<string, string> = {
+        Authorization: `Bearer ${token}`
+      };
+      if (localKey) {
+        customHeaders['x-gemini-api-key'] = localKey;
+      }
+
       let res: Response;
 
       if (mode === 'document') {
@@ -62,7 +71,7 @@ export const QuizBuilderPage: React.FC = () => {
         setLoadingStage('Generating structured questions with Gemini...');
         res = await fetch('/api/generator/generate', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: customHeaders,
           body: formData
         });
       } else {
@@ -72,7 +81,7 @@ export const QuizBuilderPage: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
+            ...customHeaders
           },
           body: JSON.stringify({
             prompt,

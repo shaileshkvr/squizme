@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { hasLocalApiKey } from '../utils/crypto';
 
 export interface User {
   id: string;
@@ -31,7 +32,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (res.ok) {
         const data = await res.json();
-        setUser(data);
+        setUser({
+          ...data,
+          hasCustomKey: data.hasCustomKey || hasLocalApiKey()
+        });
       } else {
         logout();
       }
@@ -47,7 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    setUser(newUser);
+    setUser({
+      ...newUser,
+      hasCustomKey: newUser.hasCustomKey || hasLocalApiKey()
+    });
   };
 
   const logout = () => {

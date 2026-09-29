@@ -5,8 +5,8 @@ This document records the chosen architecture and the deferred high-scale archit
 ## Selected approach: Unified TypeScript monorepo with domain modules
 
 Structure the repository as a `pnpm` workspace with three packages:
-- `apps/server`: Fastify, Drizzle ORM, MySQL 8.
-- `apps/client`: Vite, React 19, Tailwind CSS, Lucide icons.
+- `apps/server`: Fastify, Drizzle ORM, PostgreSQL 16.
+- `apps/client`: Vite, React 19, Tailwind CSS, Lucide icons, Web Crypto API (client-side encrypted BYO keys).
 - `packages/shared`: Shared Zod validation schemas, TypeScript interfaces, and question definitions.
 
 ### Backend module boundaries

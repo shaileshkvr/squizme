@@ -7,7 +7,15 @@ import { decryptApiKey } from '../../utils/encryption.js';
 import { buildQuestionTools } from './tools.js';
 import { GenerateQuizRequest, Question } from '@squizme/shared';
 
-export async function resolveApiKeyAndEnforceQuota(userId: string, requestedCount: number) {
+export async function resolveApiKeyAndEnforceQuota(
+  userId: string,
+  requestedCount: number,
+  clientCustomKey?: string
+) {
+  if (clientCustomKey && clientCustomKey.trim().length > 0) {
+    return { apiKey: clientCustomKey.trim(), isCustomKey: true, allowedCount: Math.min(requestedCount, 50) };
+  }
+
   const records = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (records.length === 0) {
     throw new Error('User not found');
@@ -35,9 +43,10 @@ export async function resolveApiKeyAndEnforceQuota(userId: string, requestedCoun
 export async function generateQuizWithGemini(
   userId: string,
   request: GenerateQuizRequest,
-  extractedDocumentText?: string
+  extractedDocumentText?: string,
+  clientCustomKey?: string
 ) {
-  const { apiKey, isCustomKey, allowedCount } = await resolveApiKeyAndEnforceQuota(userId, request.questionCount);
+  const { apiKey, isCustomKey, allowedCount } = await resolveApiKeyAndEnforceQuota(userId, request.questionCount, clientCustomKey);
   const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = `

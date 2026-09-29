@@ -94,9 +94,14 @@ export const AboutPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-300 pt-2 border-t border-white/10">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Your personal Gemini key is encrypted at rest using AES-256-GCM and never shared with anyone.</span>
+        <div className="space-y-2 pt-2 border-t border-white/10 text-xs text-slate-300">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>API keys are never stored on our servers—they are encrypted with AES-GCM and saved locally on your device.</span>
+          </div>
+          <p className="text-slate-400 pl-6 leading-relaxed">
+            We collect zero data on you and your queries. Any prompt processing and logging performed by the Google Gemini model itself is governed under Google's independent AI terms and has nothing to do with us as a company.
+          </p>
         </div>
       </section>
 

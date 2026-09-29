@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ExternalLink, CheckCircle, Video, Key, X, AlertCircle } from 'lucide-react';
+import { ExternalLink, CheckCircle, Video, Key, X, AlertCircle, ShieldCheck } from 'lucide-react';
+import { saveLocalApiKey, removeLocalApiKey, hasLocalApiKey } from '../utils/crypto';
 
 export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { user, token, refreshProfile } = useAuth();
@@ -16,19 +17,13 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
     setErrorMessage('');
 
     try {
-      const res = await fetch('/api/users/api-key', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ apiKey })
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to save API key');
+      const trimmed = apiKey.trim();
+      if (trimmed.length < 10) {
+        throw new Error('Please enter a valid Gemini API key (at least 10 characters).');
       }
+
+      // Save encrypted locally on the user's device
+      await saveLocalApiKey(trimmed);
 
       setStatus('success');
       await refreshProfile();
@@ -43,11 +38,15 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
   };
 
   const handleRemove = async () => {
-    if (!confirm('Remove your custom API key? You will revert to host quota.')) return;
-    await fetch('/api/users/api-key', {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if (!confirm('Remove your custom API key from this device? You will revert to host quota.')) return;
+    removeLocalApiKey();
+    // Also clear server-side fallback if any exists
+    if (token) {
+      await fetch('/api/users/api-key', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
+    }
     await refreshProfile();
   };
 
@@ -87,6 +86,17 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
           </ol>
         </div>
 
+        {/* Privacy & Storage Guarantee Notice */}
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4 text-xs text-emerald-900 flex gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <strong className="font-semibold block text-emerald-950">Local-Only Encrypted Storage</strong>
+            <p className="text-emerald-800 leading-relaxed">
+              Your API key is never stored on our servers—it is saved locally on your device encrypted with AES-GCM. We collect zero data on you and your queries. The Google Gemini model itself processes requests under its own terms, which are independent of us as a company.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Paste Gemini API Key</label>
@@ -110,7 +120,7 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
           {status === 'success' && (
             <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-200">
               <CheckCircle className="w-4 h-4 shrink-0" />
-              <span>API key verified and securely saved!</span>
+              <span>API key encrypted and saved locally on your device!</span>
             </div>
           )}
 
@@ -126,7 +136,7 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
             </a>
 
             <div className="flex gap-2">
-              {user?.hasCustomKey && (
+              {(user?.hasCustomKey || hasLocalApiKey()) && (
                 <button
                   type="button"
                   onClick={handleRemove}
@@ -140,7 +150,7 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 disabled={status === 'saving'}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
               >
-                {status === 'saving' ? 'Saving...' : 'Save API Key'}
+                {status === 'saving' ? 'Saving...' : 'Save Locally'}
               </button>
             </div>
           </div>

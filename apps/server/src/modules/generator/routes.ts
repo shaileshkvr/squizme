@@ -49,7 +49,8 @@ export async function generatorRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const generated = await generateQuizWithGemini(request.user.id, parse.data, extractedText);
+      const clientCustomKey = (request.headers['x-gemini-api-key'] || request.headers['x-custom-api-key']) as string | undefined;
+      const generated = await generateQuizWithGemini(request.user.id, parse.data, extractedText, clientCustomKey);
       const quiz = await createQuizWithQuestions(
         request.user.id,
         generated.title,

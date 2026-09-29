@@ -18,5 +18,6 @@ Users cannot configure parameters, upload documents, or initiate quiz generation
   - `react-router-dom`
   - `lucide-react`
   - `@/apps/client/src/context/AuthContext.tsx`
+  - `@/apps/client/src/utils/crypto.ts`
 - Depended on by:
   - `@/apps/client/src/App.tsx`
