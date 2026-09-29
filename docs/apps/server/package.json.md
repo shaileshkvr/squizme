@@ -19,6 +19,7 @@ The server application cannot be managed as a pnpm workspace package, dependenci
   - `@fastify/cors`
   - `@fastify/jwt`
   - `@fastify/multipart`
+  - `@fastify/static`
   - `@squizme/shared` (`@/packages/shared`)
   - `bcrypt`
   - `dotenv`

@@ -1,7 +1,10 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import dotenv from 'dotenv';
+import path from 'node:path';
+import fs from 'node:fs';
 import authPlugin from './plugins/auth.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { userRoutes } from './modules/users/routes.js';
@@ -40,6 +43,21 @@ async function main() {
   await server.register(generatorRoutes, { prefix: '/api/generator' });
   await server.register(quizRoutes, { prefix: '/api/quizzes' });
   await server.register(attemptRoutes, { prefix: '/api/attempts' });
+
+  // Serve static assets in production if public directory exists
+  const publicPath = path.join(process.cwd(), 'apps/server/public');
+  if (fs.existsSync(publicPath)) {
+    await server.register(fastifyStatic, {
+      root: publicPath,
+      wildcard: false
+    });
+    server.setNotFoundHandler((req, reply) => {
+      if (!req.raw.url?.startsWith('/api')) {
+        return reply.sendFile('index.html');
+      }
+      reply.status(404).send({ error: 'Not found' });
+    });
+  }
 
   try {
     await server.listen({ port, host: '0.0.0.0' });

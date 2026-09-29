@@ -1,18 +1,17 @@
 # Documentation: @/docker-compose.yml
 
 ### Purpose
-Defines local development and test infrastructure including a lightweight PostgreSQL 16 container (`postgres:16-alpine`) with health checks and persistent volume storage.
+Defines container services for running PostgreSQL 16 Alpine database and the containerized Squizme full-stack app with health check dependencies.
 
 ### What happens without it
-Developers must manually install, configure, and maintain a local PostgreSQL instance or configure cloud database credentials (such as Supabase).
+Developers and operators must manually start, configure, and link local PostgreSQL and Node runtimes.
 
-### Configuration details
-- Image: `postgres:16-alpine`
-- Service: `postgres`
-- Port mapping: `5432:5432`
-- Healthcheck: `pg_isready -U postgres -d squizme`
-- Volume: `postgres_data` mapped to `/var/lib/postgresql/data`
+### Services
+- `postgres`: PostgreSQL 16 Alpine image configured with database `squizme`, standard port 5432, persistent volume `postgres_data`, and `pg_isready` healthcheck.
+- `app`: Production container built from `@/Dockerfile`, waiting on healthy database status, serving HTTP traffic on port 3001.
 
 ### Dependency graph
-- Depends on: None.
-- Depended on by: `@/apps/server` database connection.
+- Depends on:
+  - `@/Dockerfile`
+- Depended on by:
+  - Docker Compose CLI
