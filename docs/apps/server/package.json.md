@@ -12,6 +12,7 @@ The server application cannot be managed as a pnpm workspace package, dependenci
 - `start`: Starts the compiled production server with `node dist/index.js`.
 - `test`: Executes unit and integration test suites using Vitest (`vitest run`).
 - `db:push`: Pushes Drizzle ORM schema migrations directly to the PostgreSQL database via `drizzle-kit push`.
+- `db:seed`: Seeds the database with default test credentials via `tsx src/db/seed.ts`.
 
 ### Dependency graph
 - Depends on:

@@ -1,22 +1,35 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Key, LogOut, PlusCircle } from 'lucide-react';
+import { Sparkles, Key, LogOut, PlusCircle, Info, Shield } from 'lucide-react';
 
 export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiKeyModal }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b border-slate-200 bg-white sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-indigo-600">
-          <Sparkles className="w-6 h-6 text-indigo-500" />
-          <span>Squizme</span>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-indigo-600">
+            <Sparkles className="w-6 h-6 text-indigo-500" />
+            <span>Squizme</span>
+          </Link>
+
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-slate-600">
+            <Link to="/about" className="hover:text-indigo-600 flex items-center gap-1 transition">
+              <Info className="w-3.5 h-3.5" />
+              <span>About</span>
+            </Link>
+            <Link to="/privacy" className="hover:text-indigo-600 flex items-center gap-1 transition">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Privacy & Policies</span>
+            </Link>
+          </nav>
+        </div>
 
         {user ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={onOpenApiKeyModal}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 hover:border-indigo-400 bg-slate-50 transition cursor-pointer"
@@ -31,7 +44,7 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
 
             <Link
               to="/quizzes/new"
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-2 rounded-lg transition"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Create Quiz</span>
@@ -49,12 +62,20 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
             </button>
           </div>
         ) : (
-          <Link
-            to="/auth"
-            className="text-sm font-medium bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/about"
+              className="sm:hidden text-xs text-slate-600 hover:text-indigo-600 font-medium"
+            >
+              About
+            </Link>
+            <Link
+              to="/auth"
+              className="text-xs sm:text-sm font-medium bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition"
+            >
+              Sign in
+            </Link>
+          </div>
         )}
       </div>
     </header>
