@@ -24,6 +24,7 @@ The server application cannot be managed as a pnpm workspace package, dependenci
   - `dotenv`
   - `drizzle-orm`
   - `fastify`
+  - `fastify-plugin`
   - `mammoth`
   - `pdf-parse`
   - `postgres`
