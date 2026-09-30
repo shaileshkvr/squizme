@@ -29,19 +29,10 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-7">
       {/* Hero Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Your Quizzes</h1>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1">
             Author, manage, and retake AI-synthesized quizzes anytime.
-          </p>
-        </div>
-        <Link
-          to="/quizzes/new"
-          className="inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm sm:text-base font-semibold px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer self-start sm:self-auto"
-        >
-          <PlusCircle className="w-5 h-5" />
-          <span>Create New Quiz</span>
-        </Link>
+          </p>        
       </div>
 
       {loading ? (
