@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: squizme-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: squizme
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d squizme"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app-dev:
+    image: node:22-alpine
+    container_name: squizme-app-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/client/node_modules
+      - /app/apps/server/node_modules
+    ports:
+      - '5173:5173'
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:rootpassword@postgres:5432/squizme
+      JWT_SECRET: super-secret-jwt-key-minimum-32-chars-long
+      ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      DEFAULT_GEMINI_API_KEY: ${DEFAULT_GEMINI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "corepack enable && pnpm install && pnpm dev"
+
+volumes:
+  postgres_data:

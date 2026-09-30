@@ -21,3 +21,7 @@
 - [x] Task 19: Full responsive design overhaul across all pages and mobile screens
 - [x] Task 20: Tactile animations, hover elevations, and active states (`emil-design-eng`)
 - [x] Task 21: Full unit test verification, build verification, and 1:1 documentation mirroring in `docs/`
+- [x] Task 22: Coffee & Walnut color palette implementation in `index.css` with semantic CSS variables
+- [x] Task 23: Floating 80% island navbar with rounded pill geometry and top margin lift
+- [x] Task 24: Redesigned landing hero with punchy tagline and 3D mouse-tilt interactive quiz card
+- [x] Task 25: Live update development infrastructure (`docker-compose.dev.yml`, `dev:all`) and mirrored documentation

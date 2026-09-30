@@ -1,12 +1,13 @@
 # Documentation: @/apps/client/src/components/Navbar.tsx
 
 ### Purpose
-Provides application-wide top navigation, scroll-aware "Create Quiz" visibility, theme switching (dark/light), and an interactive account profile popup with password changes, name edits, quota indicators, and local API key management.
+Provides application-wide floating navigation, scroll-aware "Create Quiz" visibility, theme switching (dark/light), and an interactive account profile popup with password changes, name edits, quota indicators, and local API key management.
 
 ### What happens without it
 Users cannot toggle themes, manage their profile/password, access key settings, or navigate between the quiz studio and documentation policies.
 
 ### Key Features
+- **Floating 80% Island Layout**: Spans ~80% width with `rounded-full` pill geometry, elevated shadow, and a top margin lift (`sticky top-3 sm:top-5`).
 - **Dynamic Create Quiz Button**: Appears only on subpages or when scrolled past the top hero banner on `/`.
 - **Right-Aligned Policy Links**: Direct links to `/about` and `/privacy`.
 - **Theme Switcher**: Instant toggle between dark and light themes with persistence.
@@ -16,9 +17,10 @@ Users cannot toggle themes, manage their profile/password, access key settings, 
   - Expandable password change subform with validation (`changePassword`).
   - Google Gemini API key configuration trigger (`ApiKeyModal`).
   - Quota status indicator (free remaining vs. BYO key active).
-  - Reddish accented Sign Out button (`text-red-600 dark:text-red-400`).
+  - Reddish accented Sign Out button (`text-[#9A4D3F] dark:text-[#D98678]`).
   - Click-outside and Escape key dismissal.
 - **Zero Sign-Up Leak**: Removes sign-up triggers when an active session is detected.
+- **Coffee & Walnut Tokens**: Fully styled with the warm coffee/walnut tokens and dusty blue AI accent icons.
 
 ### Dependency graph
 - Depends on:

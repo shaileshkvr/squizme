@@ -11,7 +11,7 @@ Users cannot configure topic prompts, upload study documents, calibrate depth/di
 - **Centered Slider**: Centered layout with real-time question count badge, enforcing a minimum of 5 questions.
 - **Scope Policy Banner**: Prominently positioned *below* the primary Generate Quiz button.
 - **Evaluation Mode Selector**: Choice between immediate feedback (Learning Mode) and timed submission (Exam Mode).
-- **Dark Mode & Teal Theme**: Supports dark/light themes with tactile hover and active animations.
+- **Dark Mode & Coffee/Walnut Theme**: Supports dark/light themes with warm coffee neutrals and tactile hover/active animations.
 
 ### Dependency graph
 - Depends on:

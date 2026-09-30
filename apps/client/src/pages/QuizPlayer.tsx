@@ -42,7 +42,7 @@ export const QuizPlayerPage: React.FC = () => {
 
   if (loading || !quiz) {
     return (
-      <div className="text-center py-16 text-slate-500 dark:text-slate-400 text-sm sm:text-base">
+      <div className="text-center py-16 text-brand-muted text-sm sm:text-base">
         Loading quiz session...
       </div>
     );
@@ -102,22 +102,22 @@ export const QuizPlayerPage: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Quiz Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-brand-card p-4 sm:p-5 rounded-3xl border border-brand-border shadow-sm transition-colors">
         <div>
-          <h2 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white line-clamp-1">{quiz.title}</h2>
-          <span className="text-sm text-slate-500 dark:text-slate-400">
+          <h2 className="font-bold text-base sm:text-lg text-brand-text line-clamp-1">{quiz.title}</h2>
+          <span className="text-sm text-brand-muted">
             Question {currentIndex + 1} of {quiz.questions.length}
           </span>
         </div>
-        <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300 capitalize">
-          {isLearningMode ? <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> : <Clock className="w-3.5 h-3.5 text-amber-500" />}
+        <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs sm:text-sm px-3.5 py-1 rounded-full bg-brand-elevated font-semibold text-brand-text border border-brand-border capitalize">
+          {isLearningMode ? <BookOpen className="w-3.5 h-3.5 text-brand-ai" /> : <Clock className="w-3.5 h-3.5 text-brand-warning" />}
           {quiz.settings?.mode} Mode
         </span>
       </div>
 
       {/* Question Card */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 transition-colors">
-        <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white leading-relaxed">
+      <div className="bg-brand-card p-6 sm:p-8 rounded-3xl border border-brand-border shadow-sm space-y-6 transition-colors">
+        <h3 className="text-base sm:text-lg font-bold text-brand-text leading-relaxed">
           {currentQ.prompt}
         </h3>
 
@@ -130,7 +130,7 @@ export const QuizPlayerPage: React.FC = () => {
               value={(currentAnswer as string) || ''}
               disabled={isChecked && isLearningMode}
               onChange={(e) => setAnswers({ ...answers, [currentQ.id]: e.target.value })}
-              className="w-full text-sm sm:text-base px-4 py-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+              className="w-full text-sm sm:text-base px-4 py-3 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
             />
           </div>
         ) : (
@@ -144,15 +144,15 @@ export const QuizPlayerPage: React.FC = () => {
                 <button
                   key={opt.id}
                   onClick={() => handleSelectOption(opt.id)}
-                  className={`w-full text-left p-4 rounded-xl border text-sm sm:text-base transition-all duration-150 flex items-center justify-between cursor-pointer min-h-[50px] active:scale-[0.99] ${
+                  className={`w-full text-left p-4 rounded-2xl border text-sm sm:text-base transition-all duration-150 flex items-center justify-between cursor-pointer min-h-[52px] active:scale-[0.99] ${
                     isSelected
-                      ? 'border-teal-600 dark:border-teal-500 bg-teal-50/70 dark:bg-teal-950/40 text-teal-950 dark:text-teal-100 font-semibold shadow-sm'
-                      : 'border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 text-slate-800 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-800/40'
+                      ? 'border-brand-primary bg-brand-elevated text-brand-text font-semibold shadow-sm'
+                      : 'border-brand-border hover:border-brand-border-strong text-brand-secondary hover:bg-brand-elevated/40 bg-brand-card'
                   }`}
                 >
                   <span className="leading-relaxed">{opt.text}</span>
                   {isSelected && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-teal-600 dark:bg-teal-400 shrink-0 ml-3" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-brand-primary shrink-0 ml-3" />
                   )}
                 </button>
               );
@@ -167,27 +167,27 @@ export const QuizPlayerPage: React.FC = () => {
               <button
                 onClick={handleCheckAnswer}
                 disabled={!currentAnswer || (Array.isArray(currentAnswer) && currentAnswer.length === 0)}
-                className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
+                className="bg-brand-primary hover:bg-brand-hover text-brand-primary-text text-sm font-semibold px-6 py-2.5 rounded-full transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
               >
                 Check Answer
               </button>
             ) : (
               <div
-                className={`p-4 sm:p-5 rounded-xl text-sm space-y-2 border ${
+                className={`p-4 sm:p-5 rounded-2xl text-sm space-y-2 border ${
                   isCorrect
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-red-50 dark:bg-red-950/40 text-red-950 dark:text-red-200 border-red-200 dark:border-red-800'
+                    ? 'bg-brand-card text-brand-text border-brand-success/40'
+                    : 'bg-brand-card text-brand-text border-brand-error/40'
                 }`}
               >
                 <div className="flex items-center gap-2 font-bold text-base">
                   {isCorrect ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <CheckCircle2 className="w-5 h-5 text-brand-success" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <XCircle className="w-5 h-5 text-brand-error" />
                   )}
                   <span>{isCorrect ? 'Correct!' : 'Incorrect'}</span>
                 </div>
-                <p className="leading-relaxed">{currentQ.explanation}</p>
+                <p className="leading-relaxed text-brand-secondary">{currentQ.explanation}</p>
               </div>
             )}
           </div>
@@ -199,7 +199,7 @@ export const QuizPlayerPage: React.FC = () => {
         <button
           onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
           disabled={currentIndex === 0}
-          className="flex items-center gap-1.5 text-sm sm:text-base font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer transition p-2"
+          className="flex items-center gap-1.5 text-sm sm:text-base font-medium text-brand-secondary hover:text-brand-text disabled:opacity-30 cursor-pointer transition p-2"
         >
           <ArrowLeft className="w-4 h-4" /> Previous
         </button>
@@ -207,7 +207,7 @@ export const QuizPlayerPage: React.FC = () => {
         {currentIndex < quiz.questions.length - 1 ? (
           <button
             onClick={() => setCurrentIndex(currentIndex + 1)}
-            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl transition-all duration-200 hover:shadow active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-brand-primary hover:bg-brand-hover text-brand-primary-text px-6 py-2.5 rounded-full transition-all duration-200 hover:shadow active:scale-95 cursor-pointer"
           >
             <span>Next</span>
             <ArrowRight className="w-4 h-4" />
@@ -216,7 +216,7 @@ export const QuizPlayerPage: React.FC = () => {
           <button
             onClick={handleSubmitQuiz}
             disabled={submitting}
-            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-brand-success hover:opacity-90 text-white px-7 py-2.5 rounded-full transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             <span>{submitting ? 'Submitting...' : 'Submit Quiz'}</span>

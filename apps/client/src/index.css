@@ -2,6 +2,69 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --bg-app: #F8F4EB;
+  --surface-card: #FFFDF8;
+  --surface-elevated: #F1EADF;
+  --text-primary: #24150E;
+  --text-secondary: #69594D;
+  --text-muted: #847366;
+  --border-color: #DDD1C2;
+  --border-strong: #CFC1B2;
+  --primary-color: #5A301D;
+  --primary-hover: #472313;
+  --primary-text: #FFFDF8;
+  --ai-accent: #416A7A;
+  --ai-soft: #E3EEF1;
+  --ai-text: #315765;
+  --success-color: #47705B;
+  --warning-color: #96733B;
+  --error-color: #9A4D3F;
+}
+
+@theme {
+  --color-brand-bg: var(--bg-app);
+  --color-brand-card: var(--surface-card);
+  --color-brand-elevated: var(--surface-elevated);
+  --color-brand-text: var(--text-primary);
+  --color-brand-secondary: var(--text-secondary);
+  --color-brand-muted: var(--text-muted);
+  --color-brand-border: var(--border-color);
+  --color-brand-border-strong: var(--border-strong);
+  --color-brand-primary: var(--primary-color);
+  --color-brand-hover: var(--primary-hover);
+  --color-brand-primary-text: var(--primary-text);
+  --color-brand-ai: var(--ai-accent);
+  --color-brand-ai-soft: var(--ai-soft);
+  --color-brand-ai-text: var(--ai-text);
+  --color-brand-success: var(--success-color);
+  --color-brand-warning: var(--warning-color);
+  --color-brand-error: var(--error-color);
+}
+
+.dark {
+  --bg-app: #1D0D00;
+  --surface-card: #2A160B;
+  --surface-elevated: #3B1E11;
+  --text-primary: #F8F4EB;
+  --text-secondary: #CFC0B1;
+  --text-muted: #A99584;
+  --border-color: #5A3E30;
+  --border-strong: #6D4B3B;
+  --primary-color: #C28A69;
+  --primary-hover: #D09A78;
+  --primary-text: #1D0D00;
+  --ai-accent: #79AFC2;
+  --ai-soft: #1F343B;
+  --ai-text: #B9D8E1;
+  --success-color: #82B99A;
+  --warning-color: #D2AE69;
+  --error-color: #D98678;
+}
+
 body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
