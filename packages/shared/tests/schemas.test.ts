@@ -50,13 +50,27 @@ describe('Shared Schemas', () => {
     expect(parsed.success).toBe(false);
   });
 
-  it('validates user registration schema', () => {
+  it('validates user registration schema and password complexity rules', () => {
+    // Valid passwords: min 8 chars, at least 1 letter, 1 number, 1 special char (no mixed case required)
     const valid = {
       email: 'user@example.com',
-      password: 'password123',
+      password: 'password123!',
       name: 'Test User'
     };
     expect(RegisterRequestSchema.safeParse(valid).success).toBe(true);
+
+    const validUppercase = {
+      email: 'user2@example.com',
+      password: 'UPPERCASE123!',
+      name: 'Uppercase User'
+    };
+    expect(RegisterRequestSchema.safeParse(validUppercase).success).toBe(true);
+
+    // Invalid passwords
+    expect(RegisterRequestSchema.safeParse({ ...valid, password: 'short1!' }).success).toBe(false); // < 8 chars
+    expect(RegisterRequestSchema.safeParse({ ...valid, password: 'password123' }).success).toBe(false); // no special char
+    expect(RegisterRequestSchema.safeParse({ ...valid, password: 'password!@#' }).success).toBe(false); // no number
+    expect(RegisterRequestSchema.safeParse({ ...valid, password: '12345678!@#' }).success).toBe(false); // no letter
 
     const invalid = {
       email: 'not-an-email',

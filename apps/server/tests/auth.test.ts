@@ -8,7 +8,7 @@ describe('Auth & User Modules', () => {
   let app: FastifyInstance;
   const testUser = {
     email: `test-${Date.now()}@example.com`,
-    password: 'securePassword123',
+    password: 'securePassword123!',
     name: 'Test Explorer'
   };
   let authToken: string;
@@ -32,9 +32,47 @@ describe('Auth & User Modules', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'invalid-email', password: 'password123', name: 'Test' }
+      payload: { email: 'invalid-email', password: 'password123!', name: 'Test' }
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects registration with weak passwords failing complexity rules', async () => {
+    // Missing special character
+    const resNoSpecial = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { email: 'nospecial@example.com', password: 'password123', name: 'No Special' }
+    });
+    expect(resNoSpecial.statusCode).toBe(400);
+    expect(JSON.parse(resNoSpecial.body).error).toContain('special character');
+
+    // Missing number
+    const resNoNumber = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { email: 'nonumber@example.com', password: 'password!@#', name: 'No Number' }
+    });
+    expect(resNoNumber.statusCode).toBe(400);
+    expect(JSON.parse(resNoNumber.body).error).toContain('number');
+
+    // Missing letter
+    const resNoLetter = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { email: 'noletter@example.com', password: '12345678!@#', name: 'No Letter' }
+    });
+    expect(resNoLetter.statusCode).toBe(400);
+    expect(JSON.parse(resNoLetter.body).error).toContain('letter');
+
+    // Shorter than 8 chars
+    const resShort = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { email: 'short@example.com', password: 'p1!', name: 'Short' }
+    });
+    expect(resShort.statusCode).toBe(400);
+    expect(JSON.parse(resShort.body).error).toContain('8 characters');
   });
 
   it('registers a new user successfully', async () => {

@@ -26,7 +26,7 @@ export const AboutPage: React.FC = () => {
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/auth"
+            to="/auth?mode=register"
             className="inline-flex items-center gap-2 bg-brand-card hover:bg-brand-elevated text-brand-text border border-brand-border font-semibold text-sm sm:text-base px-6 py-3 rounded-full transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer shadow-sm"
           >
             <span>Sign In / Register</span>

@@ -51,7 +51,7 @@ export const LandingHero: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-3.5 pt-2">
           <Link
-            to={user ? "/quizzes/new" : "/auth"}
+            to={user ? "/quizzes/new" : "/auth?mode=register"}
             className="inline-flex items-center gap-2 bg-[#5A301D] hover:bg-[#472313] text-[#FFFDF8] dark:bg-[#C28A69] dark:hover:bg-[#D09A78] dark:text-[#1D0D00] font-semibold text-sm sm:text-base px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             <span>{user ? 'Create a Quiz' : 'Get Started Free'}</span>
@@ -97,7 +97,7 @@ export const LandingHero: React.FC = () => {
           {/* Card Top Pill */}
           <div className="flex items-center justify-between pb-4 border-b border-[#DDD1C2] dark:border-[#5A3E30] mb-4">
             <span className="text-xs font-bold uppercase tracking-wider text-[#847366] dark:text-[#A99584]">
-              Sample Question Preview
+              Preview
             </span>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E3EEF1] dark:bg-[#1F343B] text-[#315765] dark:text-[#B9D8E1] border border-[#DDD1C2] dark:border-[#5A3E30]">
               Learning Mode

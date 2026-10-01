@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { validatePassword } from '@squizme/shared';
 import {
   Sparkles,
   Key,
@@ -15,7 +16,8 @@ import {
   Edit2,
   Check,
   X,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react';
 
 export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiKeyModal }) => {
@@ -89,19 +91,32 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
   const [newPassword, setNewPassword] = useState('');
   const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [passwordError, setPasswordError] = useState('');
+  const [passwordTouched, setPasswordTouched] = useState<{ current?: boolean; new?: boolean }>({});
+
+  const newPassValidationError = validatePassword(newPassword);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordStatus('saving');
+    setPasswordTouched({ current: true, new: true });
     setPasswordError('');
+
+    if (!currentPassword) {
+      setPasswordError('Current password is required.');
+      return;
+    }
+
+    if (newPassValidationError) {
+      setPasswordError(newPassValidationError);
+      return;
+    }
+
+    setPasswordStatus('saving');
     try {
-      if (newPassword.length < 8) {
-        throw new Error('New password must be at least 8 characters long');
-      }
       await changePassword(currentPassword, newPassword);
       setPasswordStatus('success');
       setCurrentPassword('');
       setNewPassword('');
+      setPasswordTouched({});
       setTimeout(() => {
         setPasswordStatus('idle');
         setShowPasswordChange(false);
@@ -296,38 +311,111 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                     {showPasswordChange && (
                       <form
                         onSubmit={handleChangePassword}
+                        noValidate
                         className="p-3.5 bg-[#F1EADF] dark:bg-[#1D0D00] rounded-2xl space-y-2.5 mt-1 border border-[#DDD1C2] dark:border-[#5A3E30]"
                       >
                         <div>
-                          <label className="block text-xs font-semibold text-[#69594D] dark:text-[#CFC0B1] mb-1">
-                            Current Password
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full text-sm px-3 py-1.5 rounded-xl border border-[#DDD1C2] dark:border-[#5A3E30] bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
-                          />
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-semibold text-[#69594D] dark:text-[#CFC0B1]">
+                              Current Password
+                            </label>
+                            {passwordTouched.current && currentPassword && (
+                              <span className="text-xs text-[#47705B] dark:text-[#82B99A] font-semibold flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Valid
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="password"
+                              value={currentPassword}
+                              onBlur={() => setPasswordTouched((prev) => ({ ...prev, current: true }))}
+                              onChange={(e) => {
+                                setCurrentPassword(e.target.value);
+                                if (!passwordTouched.current) {
+                                  setPasswordTouched((prev) => ({ ...prev, current: true }));
+                                }
+                              }}
+                              className={`w-full text-sm px-3 py-1.5 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
+                                !passwordTouched.current
+                                  ? 'border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]'
+                                  : currentPassword
+                                  ? 'border-2 border-[#47705B] dark:border-[#82B99A]'
+                                  : 'border-2 border-[#9A4D3F] dark:border-[#D98678]'
+                              }`}
+                            />
+                            {passwordTouched.current && currentPassword && (
+                              <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] absolute right-3 top-2 pointer-events-none" />
+                            )}
+                            {passwordTouched.current && !currentPassword && (
+                              <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] absolute right-3 top-2 pointer-events-none" />
+                            )}
+                          </div>
+                          {passwordTouched.current && !currentPassword && (
+                            <p className="text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium flex items-center gap-1.5 mt-1">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              <span>Current password is required.</span>
+                            </p>
+                          )}
                         </div>
+
                         <div>
-                          <label className="block text-xs font-semibold text-[#69594D] dark:text-[#CFC0B1] mb-1">
-                            New Password (min 8 chars)
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            minLength={8}
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full text-sm px-3 py-1.5 rounded-xl border border-[#DDD1C2] dark:border-[#5A3E30] bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
-                          />
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-semibold text-[#69594D] dark:text-[#CFC0B1]">
+                              New Password
+                            </label>
+                            {passwordTouched.new && newPassValidationError === null && (
+                              <span className="text-xs text-[#47705B] dark:text-[#82B99A] font-semibold flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Strong password
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="password"
+                              placeholder="••••••••"
+                              value={newPassword}
+                              onBlur={() => setPasswordTouched((prev) => ({ ...prev, new: true }))}
+                              onChange={(e) => {
+                                setNewPassword(e.target.value);
+                                if (!passwordTouched.new) {
+                                  setPasswordTouched((prev) => ({ ...prev, new: true }));
+                                }
+                              }}
+                              className={`w-full text-sm px-3 py-1.5 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
+                                !passwordTouched.new
+                                  ? 'border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]'
+                                  : newPassValidationError === null
+                                  ? 'border-2 border-[#47705B] dark:border-[#82B99A]'
+                                  : 'border-2 border-[#9A4D3F] dark:border-[#D98678]'
+                              }`}
+                            />
+                            {passwordTouched.new && newPassValidationError === null && (
+                              <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] absolute right-3 top-2 pointer-events-none" />
+                            )}
+                            {passwordTouched.new && newPassValidationError !== null && (
+                              <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] absolute right-3 top-2 pointer-events-none" />
+                            )}
+                          </div>
+                          {passwordTouched.new && newPassValidationError && (
+                            <p className="text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium flex items-center gap-1.5 mt-1">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              <span>{newPassValidationError}</span>
+                            </p>
+                          )}
                         </div>
-                        {passwordError && (
-                          <p className="text-xs text-[#9A4D3F] dark:text-[#D98678] font-medium">{passwordError}</p>
+
+                        {passwordError && passwordStatus === 'error' && (
+                          <div className="flex items-center gap-1.5 text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium p-2 rounded-xl bg-[#9A4D3F]/10 border border-[#9A4D3F]/20">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            <span>{passwordError}</span>
+                          </div>
                         )}
                         {passwordStatus === 'success' && (
-                          <p className="text-xs text-[#47705B] dark:text-[#82B99A] font-medium">Password updated!</p>
+                          <div className="flex items-center gap-1.5 text-sm text-[#47705B] dark:text-[#82B99A] font-medium p-2 rounded-xl bg-[#47705B]/10 border border-[#47705B]/20">
+                            <Check className="w-4 h-4 shrink-0" />
+                            <span>Password updated successfully!</span>
+                          </div>
                         )}
                         <button
                           type="submit"
@@ -359,7 +447,7 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
             </div>
           ) : (
             <Link
-              to="/auth"
+              to="/auth?mode=login"
               className="text-xs sm:text-sm font-semibold bg-[#5A301D] hover:bg-[#472313] text-[#FFFDF8] dark:bg-[#C28A69] dark:hover:bg-[#D09A78] dark:text-[#1D0D00] px-4 py-2 rounded-full transition-all active:scale-95 shadow-sm"
             >
               Sign in

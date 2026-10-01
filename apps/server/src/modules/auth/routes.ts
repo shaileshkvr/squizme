@@ -6,7 +6,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/register', async (request, reply) => {
     const parse = RegisterRequestSchema.safeParse(request.body);
     if (!parse.success) {
-      return reply.status(400).send({ error: 'Validation failed', details: parse.error.format() });
+      const firstError = parse.error.errors[0]?.message || 'Validation failed';
+      return reply.status(400).send({ error: firstError, details: parse.error.format() });
     }
 
     try {

@@ -14,7 +14,7 @@ Users cannot toggle themes, manage their profile/password, access key settings, 
 - **Account Popup**:
   - Displays user name and email.
   - Inline display name editing (`updateName`).
-  - Expandable password change subform with validation (`changePassword`).
+  - Expandable password change subform with dynamic green/red border feedback and `text-sm` warnings enforcing complexity rules (min 8 characters, 1 letter, 1 number, 1 special character).
   - Google Gemini API key configuration trigger (`ApiKeyModal`).
   - Quota status indicator (free remaining vs. BYO key active).
   - Reddish accented Sign Out button (`text-[#9A4D3F] dark:text-[#D98678]`).
@@ -27,6 +27,7 @@ Users cannot toggle themes, manage their profile/password, access key settings, 
   - `react`
   - `react-router-dom`
   - `lucide-react`
+  - `@/packages/shared/src/schemas/user.ts`
   - `@/apps/client/src/context/AuthContext.tsx`
   - `@/apps/client/src/context/ThemeContext.tsx`
 - Depended on by:

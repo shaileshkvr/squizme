@@ -128,7 +128,7 @@ export const LandingPage: React.FC = () => {
         </p>
         <div className="pt-2">
           <Link
-            to="/auth"
+            to="/auth?mode=register"
             className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-hover text-brand-primary-text font-semibold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             <span>Create Free Account</span>

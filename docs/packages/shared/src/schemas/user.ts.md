@@ -1,19 +1,25 @@
 # Documentation: @/packages/shared/src/schemas/user.ts
 
 ### Purpose
-Defines Zod schemas and TypeScript types for user authentication, registration, login requests, and API key management.
+Defines Zod schemas, helper functions, and TypeScript types for user authentication, registration, login requests, password changing, and API key management.
 
 ### What happens without it
 User registration, authentication requests, and API key updates cannot be validated contractually across client and server.
 
 ### Key schemas and types
-- `RegisterRequestSchema` / `RegisterRequest`: Validates user registration fields (email format, password min length 8, name length 2-100).
+- `validatePassword(password: string): string | null`: Reusable validation helper verifying password rules (at least 8 characters, at least 1 letter, at least 1 number, at least 1 special character; no uppercase/lowercase distinction required).
+- `PasswordSchema`: Zod string refinement enforcing the 8-character, letter, number, and special character rules with detailed error messages.
+- `RegisterRequestSchema` / `RegisterRequest`: Validates user registration fields (email format, `PasswordSchema`, name length 2-100).
 - `LoginRequestSchema` / `LoginRequest`: Validates user login credentials (email format, non-empty password).
 - `UpdateApiKeySchema` / `UpdateApiKey`: Validates user Gemini API key updates (minimum 10 characters).
-- `ChangePasswordSchema` / `ChangePasswordRequest`: Validates current password and new password (min 8 chars).
+- `ChangePasswordSchema` / `ChangePasswordRequest`: Validates current password (non-empty) and new password (`PasswordSchema`).
 - `UpdateProfileSchema` / `UpdateProfileRequest`: Validates display name updates (2-100 characters).
 
 ### Dependency graph
 - Depends on: `zod`
 - Depended on by:
   - `@/packages/shared/src/index.ts`
+  - `@/apps/server/src/modules/auth/routes.ts`
+  - `@/apps/server/src/modules/users/routes.ts`
+  - `@/apps/client/src/pages/Auth.tsx`
+  - `@/apps/client/src/components/Navbar.tsx`
