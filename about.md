@@ -25,10 +25,10 @@ Squizme is an AI-powered quiz generation platform built as a TypeScript modular 
 - **Caveats**: Squizme collects zero tracking data on user queries. Google's model may process or log prompts independently under Google's own AI terms.
 
 ### 4. Authentication & Profile Management
-- **Purpose**: Handles user identity, JWT issuance, and session authentication.
-- **Implementation**: Password hashing with `bcrypt` (10 rounds), token issuance with `@fastify/jwt`, and endpoints for profile retrieval and quota tracking.
-- **Important Files**: [`apps/server/src/modules/auth/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/auth/service.ts), [`apps/server/src/modules/users/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/users/service.ts).
-- **Caveats**: Passwords require a minimum length of 8 characters.
+- **Purpose**: Handles user identity, JWT issuance, session authentication, and user profile management with discrete first and last name tracking.
+- **Implementation**: Password hashing with `bcrypt` (10 rounds), token issuance with `@fastify/jwt`, automated migration for legacy databases from unified `name` to `first_name` and `last_name`, and endpoints for registration, profile retrieval, name updates, and quota tracking.
+- **Important Files**: [`apps/server/src/modules/auth/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/auth/service.ts), [`apps/server/src/modules/users/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/users/service.ts), [`packages/shared/src/schemas/user.ts`](file:///home/shailesh/Projects/squizme/packages/shared/src/schemas/user.ts).
+- **Caveats**: First name is strictly required (1–100 characters); last name is optional (up to 100 characters). Passwords require a minimum length of 8 characters with letter, number, and special character rules.
 
 ### 5. Document Ingestion Guardrails
 - **Purpose**: Extracts plain text from study material while protecting server memory.
