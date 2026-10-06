@@ -7,8 +7,8 @@ Provides authenticated REST endpoints for managing the user profile and their pe
 Clients cannot retrieve user quota status or configure a personal Gemini API key.
 
 ### Endpoints
-- `GET /profile`: Requires authentication. Returns user identity, quota usage, remaining free generations, and key status.
-- `PATCH /profile`: Requires authentication. Updates user display name.
+- `GET /profile`: Requires authentication. Returns user identity (`firstName`, `lastName`, computed `name`), quota usage, remaining free generations, and key status.
+- `PATCH /profile`: Requires authentication. Updates user `firstName` and optional `lastName`.
 - `POST /change-password`: Requires authentication. Verifies current password and updates hash.
 - `PUT /api-key`: Requires authentication. Validates key schema and securely persists the encrypted API key.
 - `DELETE /api-key`: Requires authentication. Removes the saved API key from the user account.

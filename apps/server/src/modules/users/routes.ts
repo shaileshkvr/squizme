@@ -15,7 +15,7 @@ export async function userRoutes(fastify: FastifyInstance) {
     if (!parse.success) {
       return reply.status(400).send({ error: 'Validation failed', details: parse.error.format() });
     }
-    const updated = await updateUserProfile(request.user.id, parse.data.name);
+    const updated = await updateUserProfile(request.user.id, parse.data.firstName, parse.data.lastName || '');
     return reply.send(updated);
   });
 

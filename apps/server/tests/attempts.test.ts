@@ -20,7 +20,8 @@ describe('Auto-grading Engine & Attempt Flow', () => {
       id: userId,
       email: `grader-${Date.now()}@example.com`,
       passwordHash: 'hash',
-      name: 'Test Grader'
+      firstName: 'Test',
+      lastName: 'Grader'
     });
 
     const quiz = await createQuizWithQuestions(

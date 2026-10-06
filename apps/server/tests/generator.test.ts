@@ -28,7 +28,8 @@ describe('Generator Module', () => {
       id: userId,
       email: `free-${Date.now()}@example.com`,
       passwordHash: 'hash',
-      name: 'Free User',
+      firstName: 'Free',
+      lastName: 'User',
       freeGenerationsUsed: 0
     });
 
@@ -44,7 +45,8 @@ describe('Generator Module', () => {
       id: userId,
       email: `exhausted-${Date.now()}@example.com`,
       passwordHash: 'hash',
-      name: 'Exhausted User',
+      firstName: 'Exhausted',
+      lastName: 'User',
       freeGenerationsUsed: 2
     });
 
@@ -61,7 +63,8 @@ describe('Generator Module', () => {
       id: userId,
       email: `custom-${Date.now()}@example.com`,
       passwordHash: 'hash',
-      name: 'BYO User',
+      firstName: 'BYO',
+      lastName: 'User',
       customGeminiApiKey: encryptedKey,
       freeGenerationsUsed: 2
     });

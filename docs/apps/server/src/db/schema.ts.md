@@ -11,7 +11,7 @@ Drizzle ORM cannot generate SQL migrations or execute type-safe queries against 
 - `quizSourceTypeEnum`: PostgreSQL enum (`prompt`, `pdf`, `docx`, `manual`).
 - `questionTypeEnum`: PostgreSQL enum (`single_choice`, `multiple_choice`, `true_false`, `short_answer`).
 - `attemptStatusEnum`: PostgreSQL enum (`in_progress`, `completed`, `timed_out`, `abandoned`).
-- `users`: Account identities, roles, encrypted custom API keys, and free tier counters.
+- `users`: Account identities, split `first_name` and `last_name`, roles, encrypted custom API keys, and free tier counters.
 - `quizzes`: Quiz metadata, source type, settings, and creator relationship.
 - `questions`: Question prompts, typed options, correct answers, and explanations.
 - `quizAttempts`: Session attempts, timings, completion status, and scores.

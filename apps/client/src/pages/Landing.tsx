@@ -55,7 +55,7 @@ export const LandingPage: React.FC = () => {
             </div>
             <div className="pt-5 text-xs text-brand-muted flex items-center gap-1.5 font-medium">
               <CheckCircle2 className="w-4 h-4 text-brand-success" />
-              Live web verification via Gemini 2.5 Flash
+              Live web verification via Gemini 3.8 Flash
             </div>
           </div>
 

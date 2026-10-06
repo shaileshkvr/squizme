@@ -7,7 +7,8 @@ import { users } from './schema.js';
 export async function seedTestUser() {
   const email = 'testacc404@gmail.com';
   const password = '#test-user-404';
-  const name = 'Test User';
+  const firstName = 'Test';
+  const lastName = 'User';
 
   const passwordHash = await bcrypt.hash(password, 10);
   const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -15,7 +16,8 @@ export async function seedTestUser() {
   if (existing.length > 0) {
     await db.update(users).set({
       passwordHash,
-      name,
+      firstName,
+      lastName,
       freeGenerationsUsed: 0
     }).where(eq(users.email, email));
     console.log(`Updated existing test user: ${email}`);
@@ -24,7 +26,8 @@ export async function seedTestUser() {
       id: crypto.randomUUID(),
       email,
       passwordHash,
-      name,
+      firstName,
+      lastName,
       role: 'user',
       freeGenerationsUsed: 0
     });

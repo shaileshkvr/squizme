@@ -55,14 +55,16 @@ describe('Shared Schemas', () => {
     const valid = {
       email: 'user@example.com',
       password: 'password123!',
-      name: 'Test User'
+      firstName: 'Test',
+      lastName: 'User'
     };
     expect(RegisterRequestSchema.safeParse(valid).success).toBe(true);
 
     const validUppercase = {
       email: 'user2@example.com',
       password: 'UPPERCASE123!',
-      name: 'Uppercase User'
+      firstName: 'Uppercase',
+      lastName: 'User'
     };
     expect(RegisterRequestSchema.safeParse(validUppercase).success).toBe(true);
 
@@ -75,7 +77,8 @@ describe('Shared Schemas', () => {
     const invalid = {
       email: 'not-an-email',
       password: 'short',
-      name: 'A'
+      firstName: '',
+      lastName: 'User'
     };
     expect(RegisterRequestSchema.safeParse(invalid).success).toBe(false);
   });

@@ -7,7 +7,7 @@ Provides automated database schema initialization (enums, tables, foreign keys) 
 Fresh Docker containers running against uninitialized PostgreSQL databases would fail with relation missing errors unless manual database push and seed commands were executed.
 
 ### Functions
-- `bootstrapDatabase()`: Creates PostgreSQL enums and tables (`users`, `quizzes`, `questions`, `quiz_attempts`, `attempt_answers`) with `IF NOT EXISTS` guards, and inserts the default test user with bcrypt-hashed credentials if absent.
+- `bootstrapDatabase()`: Creates PostgreSQL enums and tables (`users` with `first_name` and `last_name`, `quizzes`, `questions`, `quiz_attempts`, `attempt_answers`) with `IF NOT EXISTS` guards, performs automated non-destructive migration on legacy `name` columns, and inserts the default test user with bcrypt-hashed credentials if absent.
 
 ### Dependency graph
 - Depends on:

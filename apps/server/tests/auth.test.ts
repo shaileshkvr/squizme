@@ -9,7 +9,8 @@ describe('Auth & User Modules', () => {
   const testUser = {
     email: `test-${Date.now()}@example.com`,
     password: 'securePassword123!',
-    name: 'Test Explorer'
+    firstName: 'Test',
+    lastName: 'Explorer'
   };
   let authToken: string;
 
@@ -32,7 +33,7 @@ describe('Auth & User Modules', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'invalid-email', password: 'password123!', name: 'Test' }
+      payload: { email: 'invalid-email', password: 'password123!', firstName: 'Test' }
     });
     expect(res.statusCode).toBe(400);
   });
@@ -42,7 +43,7 @@ describe('Auth & User Modules', () => {
     const resNoSpecial = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'nospecial@example.com', password: 'password123', name: 'No Special' }
+      payload: { email: 'nospecial@example.com', password: 'password123', firstName: 'No Special' }
     });
     expect(resNoSpecial.statusCode).toBe(400);
     expect(JSON.parse(resNoSpecial.body).error).toContain('special character');
@@ -51,7 +52,7 @@ describe('Auth & User Modules', () => {
     const resNoNumber = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'nonumber@example.com', password: 'password!@#', name: 'No Number' }
+      payload: { email: 'nonumber@example.com', password: 'password!@#', firstName: 'No Number' }
     });
     expect(resNoNumber.statusCode).toBe(400);
     expect(JSON.parse(resNoNumber.body).error).toContain('number');
@@ -60,7 +61,7 @@ describe('Auth & User Modules', () => {
     const resNoLetter = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'noletter@example.com', password: '12345678!@#', name: 'No Letter' }
+      payload: { email: 'noletter@example.com', password: '12345678!@#', firstName: 'No Letter' }
     });
     expect(resNoLetter.statusCode).toBe(400);
     expect(JSON.parse(resNoLetter.body).error).toContain('letter');
@@ -69,7 +70,7 @@ describe('Auth & User Modules', () => {
     const resShort = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'short@example.com', password: 'p1!', name: 'Short' }
+      payload: { email: 'short@example.com', password: 'p1!', firstName: 'Short' }
     });
     expect(resShort.statusCode).toBe(400);
     expect(JSON.parse(resShort.body).error).toContain('8 characters');
@@ -84,7 +85,8 @@ describe('Auth & User Modules', () => {
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
     expect(body.user.email).toBe(testUser.email);
-    expect(body.user.name).toBe(testUser.name);
+    expect(body.user.firstName).toBe(testUser.firstName);
+    expect(body.user.lastName).toBe(testUser.lastName);
     expect(body.token).toBeDefined();
     authToken = body.token;
   });

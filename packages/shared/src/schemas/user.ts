@@ -32,7 +32,8 @@ export const PasswordSchema = z
 export const RegisterRequestSchema = z.object({
   email: z.string().email(),
   password: PasswordSchema,
-  name: z.string().min(2).max(100)
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().max(100).optional().default('')
 });
 
 export const LoginRequestSchema = z.object({
@@ -50,7 +51,8 @@ export const ChangePasswordSchema = z.object({
 });
 
 export const UpdateProfileSchema = z.object({
-  name: z.string().min(2).max(100)
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().max(100).optional().default('')
 });
 
 export const UserSchema = RegisterRequestSchema;

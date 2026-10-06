@@ -15,7 +15,9 @@ export async function getUserProfile(userId: string) {
   return {
     id: u.id,
     email: u.email,
-    name: u.name,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    name: `${u.firstName} ${u.lastName || ''}`.trim(),
     role: u.role,
     hasCustomKey,
     freeGenerationsUsed: u.freeGenerationsUsed,
@@ -34,8 +36,8 @@ export async function removeUserApiKey(userId: string) {
   return { success: true };
 }
 
-export async function updateUserProfile(userId: string, name: string) {
-  await db.update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, userId));
+export async function updateUserProfile(userId: string, firstName: string, lastName: string = '') {
+  await db.update(users).set({ firstName, lastName, updatedAt: new Date() }).where(eq(users.id, userId));
   return getUserProfile(userId);
 }
 

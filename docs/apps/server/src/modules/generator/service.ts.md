@@ -8,7 +8,7 @@ The server cannot synthesize AI quizzes or enforce billing/quota rules.
 
 ### Functions
 - `resolveApiKeyAndEnforceQuota(userId, requestedCount, clientCustomKey)`: Determines if the caller provided an ephemeral custom API key via headers or has one in DB (allows up to 50 questions), or is on the free tier (max 2 quizzes, 10 questions each). Throws `QUOTA_EXHAUSTED` when the free limit is exceeded.
-- `generateQuizWithGemini(userId, request, extractedDocumentText, clientCustomKey)`: Configures system instructions, search grounding tools, and calls Gemini 2.5 Flash. Parses function tool calls into questions and increments free generation counts when using server quota.
+- `generateQuizWithGemini(userId, request, extractedDocumentText, clientCustomKey)`: Configures system instructions, search grounding tools, and calls Gemini 3.8 Flash (or configured `GEMINI_MODEL`). Parses function tool calls into questions and increments free generation counts when using server quota.
 
 ### Dependency graph
 - Depends on:

@@ -18,7 +18,8 @@ export const AuthPage: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [otpSentEmail, setOtpSentEmail] = useState('');
@@ -79,17 +80,16 @@ export const AuthPage: React.FC = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = emailRegex.test(email.trim());
   const emailError = !email.trim()
-    ? 'Email address is required.'
+    ? 'Email is required.'
     : !isEmailValid
-    ? 'Please enter a valid email address (e.g. name@example.com).'
+    ? 'Please enter a valid email (e.g. name@example.com).'
     : null;
 
-  const isNameValid = name.trim().length >= 2;
-  const nameError = !name.trim()
-    ? 'Name is required.'
-    : name.trim().length < 2
-    ? 'Name must be at least 2 characters long.'
-    : null;
+  const isFirstNameValid = firstName.trim().length >= 1;
+  const firstNameError = !firstName.trim() ? 'First name is required.' : null;
+
+  const isLastNameValid = lastName.trim().length <= 100;
+  const lastNameError = !isLastNameValid ? 'Last name must be under 100 characters.' : null;
 
   const passwordComplexityError = validatePassword(password);
   const isRegisterPasswordValid = passwordComplexityError === null;
@@ -97,9 +97,14 @@ export const AuthPage: React.FC = () => {
   const loginPasswordError = !password ? 'Password is required.' : null;
 
   // Validation Status Resolver
-  const getNameStatus = (): 'neutral' | 'valid' | 'invalid' => {
-    if (!touched.name) return 'neutral';
-    return isNameValid ? 'valid' : 'invalid';
+  const getFirstNameStatus = (): 'neutral' | 'valid' | 'invalid' => {
+    if (!touched.firstName) return 'neutral';
+    return isFirstNameValid ? 'valid' : 'invalid';
+  };
+
+  const getLastNameStatus = (): 'neutral' | 'valid' | 'invalid' => {
+    if (!touched.lastName || !lastName.trim()) return 'neutral';
+    return isLastNameValid ? 'valid' : 'invalid';
   };
 
   const getEmailStatus = (): 'neutral' | 'valid' | 'invalid' => {
@@ -136,14 +141,19 @@ export const AuthPage: React.FC = () => {
     // Touch all relevant fields on submit
     const isRegister = mode === 'register';
     setTouched({
-      name: isRegister,
+      firstName: isRegister,
+      lastName: isRegister,
       email: true,
       password: true
     });
 
     if (isRegister) {
-      if (!isNameValid) {
-        setError(nameError || 'Please check your name input.');
+      if (!isFirstNameValid) {
+        setError(firstNameError || 'Please check your first name.');
+        return;
+      }
+      if (!isLastNameValid) {
+        setError(lastNameError || 'Please check your last name.');
         return;
       }
       if (!isEmailValid) {
@@ -164,7 +174,9 @@ export const AuthPage: React.FC = () => {
     setLoading(true);
 
     const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-    const payload = isRegister ? { email, password, name } : { email, password };
+    const payload = isRegister
+      ? { email, password, firstName: firstName.trim(), lastName: lastName.trim() }
+      : { email, password };
 
     try {
       const res = await fetch(endpoint, {
@@ -197,7 +209,7 @@ export const AuthPage: React.FC = () => {
 
     const trimmed = email.trim();
     if (!trimmed || !emailRegex.test(trimmed)) {
-      setError('Please provide a valid email address.');
+      setError('Please provide a valid email.');
       return;
     }
 
@@ -207,26 +219,19 @@ export const AuthPage: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto mt-6 sm:mt-12 bg-brand-card p-7 sm:p-9 rounded-3xl shadow-lg border border-brand-border transition-colors">
-      {/* Brand Icon Header */}
-      <div className="flex items-center justify-center gap-2.5 mb-6 text-brand-ai">
-        <div className="p-2 rounded-2xl bg-brand-elevated border border-brand-border">
-          <Sparkles className="w-6 h-6 text-brand-ai" />
-        </div>
-        <h1 className="text-2xl font-bold text-brand-text tracking-tight">Squizme</h1>
-      </div>
 
       {/* Screen Title */}
       <div className="text-center mb-6">
         <h2 className="text-xl sm:text-2xl font-extrabold text-brand-text">
-          {mode === 'register' && 'Create your account'}
-          {mode === 'login' && 'Sign in to your account'}
+          {mode === 'register' && 'Create A New Account'}
+          {mode === 'login' && 'SignIn To Your Account'}
           {mode === 'forgot' && 'Reset your password'}
           {mode === 'otp' && 'Verify your email'}
         </h2>
         <p className="text-xs sm:text-sm text-brand-secondary mt-1">
-          {mode === 'register' && 'Generate and master AI quizzes with zero subscription fees.'}
-          {mode === 'login' && 'Welcome back! Access your quizzes and review scorecards.'}
-          {mode === 'forgot' && "Enter your registered email to receive a 6-digit recovery code."}
+          {mode === 'register' && <>Generate AI quizzes &nbsp; No subscription. </>}
+          {mode === 'login' && 'Welcome back!'}
+          {mode === 'forgot' && "You will receive a 6-digit recovery code."}
           {mode === 'otp' && (
             <span>
               Sent 6-digit code to <strong className="text-brand-text">{otpSentEmail}</strong>
@@ -246,52 +251,94 @@ export const AuthPage: React.FC = () => {
       {/* 1. Login / Register Forms */}
       {(mode === 'login' || mode === 'register') && (
         <form onSubmit={handleAuthSubmit} noValidate className="space-y-4">
-          {/* Name Field (Register Mode Only) */}
+          {/* First Name & Last Name Fields (Register Mode Only) */}
           {mode === 'register' && (
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-brand-text">
-                  Your Name
-                </label>
-                {getNameStatus() === 'valid' && (
-                  <span className="text-xs text-brand-success font-semibold flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5" /> Valid
-                  </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* First Name */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-brand-text">
+                    First Name
+                  </label>
+                  {getFirstNameStatus() === 'valid' && (
+                    <span className="text-xs text-brand-success font-semibold flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Valid
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="First name"
+                    value={firstName}
+                    onBlur={() => markTouched('firstName')}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (!touched.firstName) markTouched('firstName');
+                    }}
+                    className={getInputClass(getFirstNameStatus())}
+                  />
+                  {getFirstNameStatus() === 'valid' && (
+                    <Check className="w-4 h-4 text-brand-success absolute right-3.5 top-3.5 pointer-events-none" />
+                  )}
+                  {getFirstNameStatus() === 'invalid' && (
+                    <AlertCircle className="w-4 h-4 text-brand-error absolute right-3.5 top-3.5 pointer-events-none" />
+                  )}
+                </div>
+                {getFirstNameStatus() === 'invalid' && firstNameError && (
+                  <p className="text-sm text-brand-error mt-1.5 flex items-center gap-1.5 font-medium animate-fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{firstNameError}</span>
+                  </p>
                 )}
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Shailesh Verma"
-                  value={name}
-                  onBlur={() => markTouched('name')}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (!touched.name) markTouched('name');
-                  }}
-                  className={getInputClass(getNameStatus())}
-                />
-                {getNameStatus() === 'valid' && (
-                  <Check className="w-4 h-4 text-brand-success absolute right-3.5 top-3.5 pointer-events-none" />
-                )}
-                {getNameStatus() === 'invalid' && (
-                  <AlertCircle className="w-4 h-4 text-brand-error absolute right-3.5 top-3.5 pointer-events-none" />
+
+              {/* Last Name */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-brand-text">
+                    Last Name <span className="text-xs text-brand-secondary font-normal">(Optional)</span>
+                  </label>
+                  {getLastNameStatus() === 'valid' && (
+                    <span className="text-xs text-brand-success font-semibold flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Valid
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Last name"
+                    value={lastName}
+                    onBlur={() => markTouched('lastName')}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (!touched.lastName) markTouched('lastName');
+                    }}
+                    className={getInputClass(getLastNameStatus())}
+                  />
+                  {getLastNameStatus() === 'valid' && (
+                    <Check className="w-4 h-4 text-brand-success absolute right-3.5 top-3.5 pointer-events-none" />
+                  )}
+                  {getLastNameStatus() === 'invalid' && (
+                    <AlertCircle className="w-4 h-4 text-brand-error absolute right-3.5 top-3.5 pointer-events-none" />
+                  )}
+                </div>
+                {getLastNameStatus() === 'invalid' && lastNameError && (
+                  <p className="text-sm text-brand-error mt-1.5 flex items-center gap-1.5 font-medium animate-fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{lastNameError}</span>
+                  </p>
                 )}
               </div>
-              {getNameStatus() === 'invalid' && nameError && (
-                <p className="text-sm text-brand-error mt-1.5 flex items-center gap-1.5 font-medium animate-fade-in">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{nameError}</span>
-                </p>
-              )}
             </div>
           )}
 
-          {/* Email Address Field */}
+          {/* Email Field */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-semibold text-brand-text">
-                Email Address
+                Email
               </label>
               {getEmailStatus() === 'valid' && (
                 <span className="text-xs text-brand-success font-semibold flex items-center gap-1">
@@ -302,7 +349,7 @@ export const AuthPage: React.FC = () => {
             <div className="relative">
               <input
                 type="email"
-                placeholder="shailesh@example.com"
+                placeholder="someone@example.com"
                 value={email}
                 onBlur={() => markTouched('email')}
                 onChange={(e) => {
@@ -399,7 +446,7 @@ export const AuthPage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-semibold text-brand-text">
-                Registered Email Address
+                Registered Email
               </label>
               {getEmailStatus() === 'valid' && (
                 <span className="text-xs text-brand-success font-semibold flex items-center gap-1">
@@ -410,7 +457,7 @@ export const AuthPage: React.FC = () => {
             <div className="relative">
               <input
                 type="email"
-                placeholder="shailesh@example.com"
+                placeholder="someone@example.com"
                 value={email}
                 onBlur={() => markTouched('email')}
                 onChange={(e) => {

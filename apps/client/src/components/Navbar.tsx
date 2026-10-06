@@ -65,18 +65,22 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
 
   // Profile editing state
   const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(user?.name || '');
+  const [firstNameInput, setFirstNameInput] = useState(user?.firstName || user?.name?.split(' ')[0] || '');
+  const [lastNameInput, setLastNameInput] = useState(user?.lastName ?? (user?.name?.split(' ').slice(1).join(' ') || ''));
   const [nameSaving, setNameSaving] = useState(false);
 
   useEffect(() => {
-    if (user?.name) setNameInput(user.name);
-  }, [user?.name]);
+    if (user) {
+      setFirstNameInput(user.firstName || user.name?.split(' ')[0] || '');
+      setLastNameInput(user.lastName !== undefined ? user.lastName : (user.name?.split(' ').slice(1).join(' ') || ''));
+    }
+  }, [user]);
 
   const handleSaveName = async () => {
-    if (!nameInput.trim()) return;
+    if (!firstNameInput.trim()) return;
     setNameSaving(true);
     try {
-      await updateName(nameInput.trim());
+      await updateName(firstNameInput.trim(), lastNameInput.trim());
       setEditingName(false);
     } catch (err: any) {
       alert(err.message);
@@ -196,10 +200,10 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                 aria-expanded={profileOpen}
               >
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#5A301D] dark:bg-[#C28A69] text-[#FFFDF8] dark:text-[#1D0D00] flex items-center justify-center font-bold text-xs sm:text-sm">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  {user.firstName ? user.firstName.charAt(0).toUpperCase() : (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
                 </div>
                 <span className="hidden md:inline text-xs sm:text-sm font-semibold text-[#24150E] dark:text-[#F8F4EB] max-w-[100px] truncate">
-                  {user.name}
+                  {[user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || user.email}
                 </span>
                 <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#847366] dark:text-[#A99584]" />
               </button>
@@ -223,31 +227,51 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
 
                     {/* Name edit */}
                     {editingName ? (
-                      <div className="flex items-center gap-2 pt-1">
-                        <input
-                          type="text"
-                          value={nameInput}
-                          onChange={(e) => setNameInput(e.target.value)}
-                          className="flex-1 text-sm px-3 py-1.5 rounded-xl border border-[#DDD1C2] dark:border-[#5A3E30] bg-[#FFFDF8] dark:bg-[#1D0D00] focus:outline-none focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
-                        />
-                        <button
-                          onClick={handleSaveName}
-                          disabled={nameSaving}
-                          className="p-1.5 bg-[#5A301D] dark:bg-[#C28A69] text-[#FFFDF8] dark:text-[#1D0D00] rounded-xl hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setEditingName(false)}
-                          className="p-1.5 text-[#847366] dark:text-[#A99584] cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                      <div className="space-y-2 pt-1">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="First name"
+                            value={firstNameInput}
+                            onChange={(e) => setFirstNameInput(e.target.value)}
+                            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-xl border border-[#DDD1C2] dark:border-[#5A3E30] bg-[#FFFDF8] dark:bg-[#1D0D00] focus:outline-none focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Last name"
+                            value={lastNameInput}
+                            onChange={(e) => setLastNameInput(e.target.value)}
+                            className="flex-1 min-w-0 text-sm px-3 py-1.5 rounded-xl border border-[#DDD1C2] dark:border-[#5A3E30] bg-[#FFFDF8] dark:bg-[#1D0D00] focus:outline-none focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={handleSaveName}
+                            disabled={nameSaving || !firstNameInput.trim()}
+                            className="px-3 py-1 text-xs font-semibold bg-[#5A301D] dark:bg-[#C28A69] text-[#FFFDF8] dark:text-[#1D0D00] rounded-xl hover:opacity-90 disabled:opacity-50 cursor-pointer flex items-center gap-1"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Save
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingName(false);
+                              if (user) {
+                                setFirstNameInput(user.firstName || user.name?.split(' ')[0] || '');
+                                setLastNameInput(user.lastName !== undefined ? user.lastName : (user.name?.split(' ').slice(1).join(' ') || ''));
+                              }
+                            }}
+                            className="px-2.5 py-1 text-xs text-[#847366] dark:text-[#A99584] rounded-xl hover:bg-[#F1EADF] dark:hover:bg-[#3B1E11] cursor-pointer flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" /> Cancel
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="text-sm font-bold text-[#24150E] dark:text-[#F8F4EB]">{user.name}</h4>
+                          <h4 className="text-sm font-bold text-[#24150E] dark:text-[#F8F4EB]">
+                            {[user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || user.email}
+                          </h4>
                           <p className="text-xs sm:text-sm text-[#69594D] dark:text-[#CFC0B1] truncate max-w-[200px]">
                             {user.email}
                           </p>

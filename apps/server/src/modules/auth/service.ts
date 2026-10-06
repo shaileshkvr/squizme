@@ -17,12 +17,14 @@ export async function registerUser(input: RegisterRequest) {
     id,
     email: input.email,
     passwordHash,
-    name: input.name,
+    firstName: input.firstName,
+    lastName: input.lastName || '',
     role: 'user',
     freeGenerationsUsed: 0
   });
 
-  return { id, email: input.email, name: input.name, role: 'user' };
+  const fullName = `${input.firstName} ${input.lastName || ''}`.trim();
+  return { id, email: input.email, firstName: input.firstName, lastName: input.lastName || '', name: fullName, role: 'user' };
 }
 
 export async function authenticateUser(input: LoginRequest) {
@@ -36,5 +38,6 @@ export async function authenticateUser(input: LoginRequest) {
     throw new Error('Invalid email or password');
   }
 
-  return { id: user.id, email: user.email, name: user.name, role: user.role };
+  const fullName = `${user.firstName} ${user.lastName || ''}`.trim();
+  return { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, name: fullName, role: user.role };
 }

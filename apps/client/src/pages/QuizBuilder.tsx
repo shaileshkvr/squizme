@@ -127,7 +127,7 @@ export const QuizBuilderPage: React.FC = () => {
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">Create AI Quiz</h1>
         <p className="text-sm sm:text-base text-brand-secondary mt-1">
-          Synthesize structured, pedagogical assessments from raw documents or research topics with Gemini 2.5 Flash.
+          Synthesize structured, pedagogical assessments from raw documents or research topics with Gemini 3.8 Flash.
         </p>
       </div>
 

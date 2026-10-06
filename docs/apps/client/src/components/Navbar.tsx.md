@@ -12,8 +12,8 @@ Users cannot toggle themes, manage their profile/password, access key settings, 
 - **Right-Aligned Policy Links**: Direct links to `/about` and `/privacy`.
 - **Theme Switcher**: Instant toggle between dark and light themes with persistence.
 - **Account Popup**:
-  - Displays user name and email.
-  - Inline display name editing (`updateName`).
+  - Displays user first/last name and email, falling back to computed name or email.
+  - Inline first and last name editing (`updateName(firstName, lastName)`).
   - Expandable password change subform with dynamic green/red border feedback and `text-sm` warnings enforcing complexity rules (min 8 characters, 1 letter, 1 number, 1 special character).
   - Google Gemini API key configuration trigger (`ApiKeyModal`).
   - Quota status indicator (free remaining vs. BYO key active).

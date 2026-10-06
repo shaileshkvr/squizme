@@ -38,7 +38,7 @@ Squizme is an AI-powered quiz generation platform built as a TypeScript modular 
 
 ### 6. Gemini Generation Engine
 - **Purpose**: Generates high-quality structured quizzes based on prompt or document context.
-- **Implementation**: Connects via `@google/genai` to Gemini 2.5 Flash using tool calls (`add_single_choice_question`, `add_multiple_choice_question`, `add_true_false_question`, `add_short_answer_question`). It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key (passed directly from local device storage in volatile memory).
+- **Implementation**: Connects via `@google/genai` to Gemini 3.8 Flash (configurable via `GEMINI_MODEL`) using tool calls (`add_single_choice_question`, `add_multiple_choice_question`, `add_true_false_question`, `add_short_answer_question`). It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key (passed directly from local device storage in volatile memory).
 - **Important Files**: [`apps/server/src/modules/generator/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/service.ts), [`apps/server/src/modules/generator/tools.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/tools.ts).
 - **Caveats**: Free host tier is capped at 2 generations per account. When exhausted, the server returns HTTP 403 `QUOTA_EXHAUSTED`. External model logging by Google is independent of Squizme.
 

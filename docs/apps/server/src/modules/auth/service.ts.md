@@ -7,8 +7,8 @@ Handles user account creation and password credential verification against Postg
 Users cannot register or log in, breaking all account-bound quiz creation and progress tracking.
 
 ### Functions
-- `registerUser(input: RegisterRequest)`: Checks for duplicate emails, hashes passwords with bcrypt (10 rounds), and persists the new user record. Returns `{ id, email, name, role }`.
-- `authenticateUser(input: LoginRequest)`: Retrieves user by email, verifies bcrypt password hash, and returns the sanitized user payload for JWT generation.
+- `registerUser(input: RegisterRequest)`: Checks for duplicate emails, hashes passwords with bcrypt (10 rounds), and persists the new user record with `firstName` and `lastName`. Returns `{ id, email, firstName, lastName, name, role }`.
+- `authenticateUser(input: LoginRequest)`: Retrieves user by email, verifies bcrypt password hash, and returns the sanitized user payload including `firstName`, `lastName`, and computed `name` for JWT generation.
 
 ### Dependency graph
 - Depends on:

@@ -10,7 +10,7 @@ Components cannot inspect the active user, determine remaining quota limits, or 
 - `login(token, user)`: Saves token in localStorage and sets reactive state.
 - `logout()`: Clears token and resets user state.
 - `refreshProfile()`: Fetches `/api/users/profile` to update quota counts.
-- `updateName(newName)`: Updates display name via `/api/users/profile`.
+- `updateName(firstName, lastName)`: Updates user name via `/api/users/profile`.
 - `changePassword(currentPassword, newPassword)`: Changes password via `/api/users/change-password`.
 - `useAuth()`: Custom hook to access auth context.
 

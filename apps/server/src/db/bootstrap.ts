@@ -42,13 +42,34 @@ export async function bootstrapDatabase() {
         id VARCHAR(36) PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
-        name VARCHAR(100) NOT NULL,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL DEFAULT '',
         role user_role NOT NULL DEFAULT 'user',
         custom_gemini_api_key TEXT,
         free_generations_used INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    `;
+
+    // Seamless migration for existing databases having unified 'name' column
+    await client`
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='name'
+        ) THEN
+          ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
+          ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100) DEFAULT '';
+          UPDATE users SET
+            first_name = COALESCE(NULLIF(split_part(name, ' ', 1), ''), 'User'),
+            last_name = COALESCE(NULLIF(substr(name, length(split_part(name, ' ', 1)) + 2), ''), '')
+          WHERE first_name IS NULL;
+          ALTER TABLE users ALTER COLUMN first_name SET NOT NULL;
+          ALTER TABLE users ALTER COLUMN last_name SET NOT NULL;
+          ALTER TABLE users DROP COLUMN IF EXISTS name;
+        END IF;
+      END $$;
     `;
 
     await client`
@@ -117,7 +138,8 @@ export async function bootstrapDatabase() {
         id: '65316d9f-a8b3-4c1d-bf4d-1bb87e1f5111',
         email: 'testacc404@gmail.com',
         passwordHash,
-        name: 'Test Explorer 404',
+        firstName: 'Test',
+        lastName: 'Explorer 404',
         role: 'user',
         freeGenerationsUsed: 0
       });

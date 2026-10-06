@@ -12,6 +12,7 @@ The application renders completely unstyled with browser default fonts, margins,
 - `:root` and `.dark` variables: Defines semantic color tokens for background, card surfaces, text hierarchies, borders, walnut primary action colors, and dusty blue AI accents.
 - `@theme` mapping: Maps CSS variables to Tailwind utility classes (`bg-brand-bg`, `bg-brand-card`, `bg-brand-elevated`, `text-brand-text`, `text-brand-secondary`, `text-brand-muted`, `border-brand-border`, `bg-brand-primary`, `text-brand-ai`, etc.).
 - Base styles on `body`: Sets default background, text color, system typography, and background/color transition smoothing.
+- `@keyframes clockwise-corner-tilt`: GPU-accelerated keyframe animation using a 32-point continuous squircle trajectory at 6.95s (1.15x speed) with 3D transform preservation and backface culling for jitter-free clockwise corner shifts.
 
 ### Dependency graph
 - Depends on:

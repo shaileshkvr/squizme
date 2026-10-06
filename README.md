@@ -1,6 +1,6 @@
 # Squizme
 
-Squizme is a privacy-first AI quiz builder that generates structured assessments from documents (PDF/DOCX) or plain topic prompts using Gemini 2.5 Flash.
+Squizme is a privacy-first AI quiz builder that generates structured assessments from documents (PDF/DOCX) or plain topic prompts using Gemini 3.8 Flash.
 
 ---
 

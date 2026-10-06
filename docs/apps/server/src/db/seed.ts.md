@@ -7,7 +7,7 @@ Database seeding utility creating or updating the default test user account (`te
 Developers and testers must manually register an account through the UI or API before testing authenticated workflows.
 
 ### Functions
-- `seedTestUser()`: Checks for existence of `testacc404@gmail.com`, hashes the password `#test-user-404` with bcrypt (10 rounds), and inserts or updates the record.
+- `seedTestUser()`: Checks for existence of `testacc404@gmail.com`, hashes the password `#test-user-404` with bcrypt (10 rounds), and inserts or updates the record with `firstName: 'Test'` and `lastName: 'User'`.
 
 ### Dependency graph
 - Depends on:

@@ -5,7 +5,7 @@
     "dev:server": "pnpm --filter @squizme/server dev",
     "dev:client": "pnpm --filter @squizme/client dev",
     "dev": "pnpm --parallel --filter @squizme/server --filter @squizme/client dev",
-    "dev:all": "docker compose up -d postgres && pnpm dev",
+    "dev:all": "docker stop squizme-app 2>/dev/null || true && docker compose up -d postgres && pnpm dev",
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive run test"
   },

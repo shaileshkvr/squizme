@@ -4,7 +4,9 @@ import { hasLocalApiKey } from '../utils/crypto';
 export interface User {
   id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  name?: string;
   role: string;
   hasCustomKey: boolean;
   freeGenerationsRemaining: number;
@@ -16,7 +18,7 @@ export interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   refreshProfile: () => Promise<void>;
-  updateName: (newName: string) => Promise<void>;
+  updateName: (firstName: string, lastName?: string) => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<void>;
 }
 
@@ -34,8 +36,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (res.ok) {
         const data = await res.json();
+        const firstName = data.firstName || data.name?.split(' ')[0] || '';
+        const lastName = data.lastName !== undefined ? data.lastName : (data.name?.split(' ').slice(1).join(' ') || '');
+        const fullName = `${firstName} ${lastName}`.trim() || data.name || '';
         setUser({
           ...data,
+          firstName,
+          lastName,
+          name: fullName,
           hasCustomKey: data.hasCustomKey || hasLocalApiKey()
         });
       } else {
@@ -53,8 +61,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
+    const firstName = newUser.firstName || newUser.name?.split(' ')[0] || '';
+    const lastName = newUser.lastName !== undefined ? newUser.lastName : (newUser.name?.split(' ').slice(1).join(' ') || '');
+    const fullName = `${firstName} ${lastName}`.trim() || newUser.name || '';
     setUser({
       ...newUser,
+      firstName,
+      lastName,
+      name: fullName,
       hasCustomKey: newUser.hasCustomKey || hasLocalApiKey()
     });
   };
@@ -65,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const updateName = async (newName: string) => {
+  const updateName = async (firstName: string, lastName: string = '') => {
     if (!token) return;
     const res = await fetch('/api/users/profile', {
       method: 'PATCH',
@@ -73,11 +87,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ name: newName })
+      body: JSON.stringify({ firstName, lastName })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to update name');
-    setUser((prev) => (prev ? { ...prev, name: newName } : null));
+    const fullName = `${firstName} ${lastName}`.trim();
+    setUser((prev) => (prev ? { ...prev, firstName, lastName, name: fullName } : null));
   };
 
   const changePassword = async (currentPassword: string, newPassword: string) => {

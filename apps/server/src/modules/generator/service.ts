@@ -76,7 +76,7 @@ You MUST invoke the provided question tools to emit each question.
   }
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
     contents: userPrompt,
     config
   });
