@@ -94,7 +94,7 @@ export const LandingHero: React.FC = () => {
       <div className="lg:col-span-7 space-y-6 text-left">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[#E3EEF1] dark:bg-[#1F343B] text-[#315765] dark:text-[#B9D8E1] border border-[#DDD1C2] dark:border-[#5A3E30]">
           <Sparkles className="w-4 h-4 text-[#416A7A] dark:text-[#79AFC2]" />
-          <span>Active Recall Engine · Powered by Gemini 3.8</span>
+          <span>Active Recall Engine · Powered by Groq gpt-oss-120b</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#24150E] dark:text-[#F8F4EB] leading-[1.12]">

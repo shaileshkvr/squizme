@@ -7,7 +7,7 @@ Provides application-wide floating navigation, scroll-aware "Create Quiz" visibi
 Users cannot toggle themes, manage their profile/password, access key settings, or navigate between the quiz studio and documentation policies.
 
 ### Key Features
-- **Floating 80% Island Layout**: Spans ~80% width with `rounded-full` pill geometry, elevated shadow, and a top margin lift (`sticky top-3 sm:top-5`).
+- **Floating Content-Aligned Island Layout**: Aligns with the main content boundaries (`max-w-6xl w-full mx-auto px-4 sm:px-6 md:px-8`) with `rounded-full` pill geometry, elevated shadow, and a top margin lift (`sticky top-3 sm:top-5`).
 - **Dynamic Create Quiz Button**: Appears only on subpages or when scrolled past the top hero banner on `/`.
 - **Right-Aligned Policy Links**: Direct links to `/about` and `/privacy`.
 - **Theme Switcher**: Instant toggle between dark and light themes with persistence.

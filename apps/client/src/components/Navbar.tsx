@@ -132,9 +132,9 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
   };
 
   return (
-    <header className="sticky top-3 sm:top-5 z-40 px-3 sm:px-4 pointer-events-none transition-all duration-300">
-      {/* Floating 80% Island Container */}
-      <div className="pointer-events-auto max-w-5xl w-[94%] sm:w-[88%] md:w-[80%] mx-auto h-14 sm:h-16 px-4 sm:px-6 rounded-full bg-[#FFFDF8]/95 dark:bg-[#2A160B]/95 backdrop-blur-md border border-[#DDD1C2] dark:border-[#5A3E30] shadow-md hover:shadow-lg dark:shadow-black/50 flex items-center justify-between transition-all duration-200">
+    <header className="sticky top-3 sm:top-5 z-40 max-w-6xl w-full mx-auto px-4 sm:px-6 md:px-8 mb-8 pointer-events-none transition-all duration-300">
+      {/* Floating Island Container matching main content width */}
+      <div className="pointer-events-auto w-full h-14 sm:h-16 px-4 sm:px-6 rounded-full bg-[#FFFDF8]/95 dark:bg-[#2A160B]/95 backdrop-blur-md border border-[#DDD1C2] dark:border-[#5A3E30] shadow-md hover:shadow-lg dark:shadow-black/50 flex items-center justify-between transition-all duration-200">
         
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-3">
@@ -312,7 +312,7 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                     >
                       <span className="flex items-center gap-2.5">
                         <Key className="w-4 h-4 text-[#416A7A] dark:text-[#79AFC2]" />
-                        Gemini API Key Settings
+                        Groq API Key Settings
                       </span>
                       <span className="text-xs text-[#847366] dark:text-[#A99584]">Configure</span>
                     </button>

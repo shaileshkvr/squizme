@@ -48,14 +48,14 @@ export const LandingPage: React.FC = () => {
               <div className="w-12 h-12 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center text-brand-ai">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-base sm:text-lg text-brand-text">Real-Time Search Grounding</h3>
+              <h3 className="font-bold text-base sm:text-lg text-brand-text">Deterministic AI Assessment</h3>
               <p className="text-sm text-brand-secondary leading-relaxed">
-                Enter any conceptual prompt and enable Google Search grounding. Questions are fact-checked against real-time scientific citations and latest industry standards.
+                Powered by Groq <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">openai/gpt-oss-120b</code> with strict JSON schemas and multi-pass semantic repair. Every question delivers verified unique options and educational explanations.
               </p>
             </div>
             <div className="pt-5 text-xs text-brand-muted flex items-center gap-1.5 font-medium">
               <CheckCircle2 className="w-4 h-4 text-brand-success" />
-              Live web verification via Gemini 3.8 Flash
+              Machine-validated outputs via Groq
             </div>
           </div>
 
@@ -106,13 +106,13 @@ export const LandingPage: React.FC = () => {
           <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-5 space-y-2">
             <span className="font-bold text-brand-text text-base block">Client-Side Key Encryption</span>
             <p className="text-brand-secondary leading-relaxed">
-              When you add a Google Gemini API key, it is encrypted locally on your browser with AES-256-GCM. Our servers never store or log your key.
+              When you add a Groq API key, it is encrypted locally on your browser with AES-256-GCM. Our servers never store or log your key.
             </p>
           </div>
           <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-5 space-y-2">
             <span className="font-bold text-brand-text text-base block">Zero Subscription Lock-in</span>
             <p className="text-brand-secondary leading-relaxed">
-              Google AI Studio provides generous free Gemini API keys without requiring a credit card. Enjoy unlimited quiz generations with up to 50 questions each.
+              Groq Cloud provides fast inference API access. Connect your personal key to enjoy unlimited quiz generations with up to 50 questions each.
             </p>
           </div>
         </div>

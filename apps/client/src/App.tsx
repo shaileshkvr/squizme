@@ -47,18 +47,18 @@ export const AppContent: React.FC = () => {
       <footer className="border-t border-brand-border bg-brand-card/90 py-8 mt-12 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-brand-muted">
           <div>
-            <span>© {new Date().getFullYear()} Squizme. Built with Google Gemini & TypeScript.</span>
+            <span>© {new Date().getFullYear()} Squizme. Built with Groq & TypeScript.</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link to="/about" className="hover:text-brand-ai transition font-medium">About</Link>
             <Link to="/privacy" className="hover:text-brand-ai transition font-medium">Privacy & Policies</Link>
             <a
-              href="https://aistudio.google.com/app/apikey"
+              href="https://console.groq.com/"
               target="_blank"
               rel="noreferrer"
               className="hover:text-brand-ai transition font-medium"
             >
-              Google AI Studio
+              Groq Cloud
             </a>
           </div>
         </div>

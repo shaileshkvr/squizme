@@ -1,5 +1,7 @@
-// Client-side local encryption for personal Gemini API keys using Web Crypto API (AES-GCM 256-bit)
+// Client-side local encryption for personal Groq API keys using Web Crypto API (AES-GCM 256-bit)
 const SALT = 'squizme-local-device-salt';
+const STORAGE_KEY = 'squizme_encrypted_groq_key';
+const LEGACY_STORAGE_KEY = 'squizme_encrypted_gemini_key';
 
 async function getEncryptionKey(): Promise<CryptoKey> {
   const enc = new TextEncoder();
@@ -39,11 +41,13 @@ export async function saveLocalApiKey(apiKey: string): Promise<void> {
     iv: Array.from(iv),
     data: Array.from(new Uint8Array(ciphertext))
   };
-  localStorage.setItem('squizme_encrypted_gemini_key', JSON.stringify(payload));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  // Clean up legacy key if exists
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
 }
 
 export async function getLocalApiKey(): Promise<string | null> {
-  const raw = localStorage.getItem('squizme_encrypted_gemini_key');
+  const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (!raw) return null;
   try {
     const { iv, data } = JSON.parse(raw);
@@ -60,9 +64,10 @@ export async function getLocalApiKey(): Promise<string | null> {
 }
 
 export function removeLocalApiKey(): void {
-  localStorage.removeItem('squizme_encrypted_gemini_key');
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
 }
 
 export function hasLocalApiKey(): boolean {
-  return Boolean(localStorage.getItem('squizme_encrypted_gemini_key'));
+  return Boolean(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY));
 }

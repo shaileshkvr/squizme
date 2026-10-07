@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ExternalLink, CheckCircle, Video, Key, X, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ExternalLink, CheckCircle, Key, X, AlertCircle, ShieldCheck } from 'lucide-react';
 import { saveLocalApiKey, removeLocalApiKey, hasLocalApiKey } from '../utils/crypto';
 
 export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
@@ -19,7 +19,7 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
     try {
       const trimmed = apiKey.trim();
       if (trimmed.length < 10) {
-        throw new Error('Please enter a valid Gemini API key (at least 10 characters).');
+        throw new Error('Please enter a valid Groq API key (at least 10 characters).');
       }
 
       // Save encrypted locally on the user's device
@@ -70,32 +70,33 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
             <Key className="w-6 h-6 text-brand-ai" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-brand-text">Google Gemini API Key</h2>
+            <h2 className="text-xl font-bold text-brand-text">Groq Cloud API Key</h2>
             <span className="text-xs text-brand-muted">Bring Your Own Key (BYOK) Configuration</span>
           </div>
         </div>
 
         <p className="text-sm text-brand-secondary mb-5 leading-relaxed">
-          Google AI Studio provides 100% free Gemini API keys without requiring a credit card. Connect your key to unlock unlimited quizzes with up to 50 questions each.
+          Groq provides fast, deterministic inference for <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">openai/gpt-oss-120b</code>. Connect your personal key to unlock unlimited quizzes with up to 50 questions each.
         </p>
 
-        {/* 3-Step Walkthrough */}
+        {/* 4-Step Walkthrough */}
         <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-4 mb-5 space-y-2.5">
-          <h3 className="text-xs font-bold text-brand-muted uppercase tracking-wider">How to get your free key in 30 seconds</h3>
+          <h3 className="text-xs font-bold text-brand-muted uppercase tracking-wider">How to get and configure your Groq key</h3>
           <ol className="text-sm text-brand-secondary space-y-2 list-decimal list-inside leading-relaxed">
             <li>
               <a
-                href="https://aistudio.google.com/app/apikey"
+                href="https://console.groq.com/"
                 target="_blank"
                 rel="noreferrer"
                 className="text-brand-ai hover:underline font-semibold inline-flex items-center gap-1"
               >
-                Open Google AI Studio <ExternalLink className="w-3.5 h-3.5" />
+                Sign in to Groq Cloud <ExternalLink className="w-3.5 h-3.5" />
               </a>{' '}
-              and sign in with your Google account.
+              or create a new free account.
             </li>
-            <li>Click the blue <strong>"Create API key"</strong> button.</li>
-            <li>Copy the key and paste it below.</li>
+            <li>Go to <strong>API Keys</strong> in the sidebar and click <strong>"Create API Key"</strong>.</li>
+            <li>Go to <strong>Projects</strong>, select your active project, and verify it is allowed to accept requests via API.</li>
+            <li>Copy your generated key (starts with <code className="text-xs">gsk_</code>) and paste it below.</li>
           </ol>
         </div>
 
@@ -105,17 +106,17 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
           <div className="space-y-1">
             <strong className="font-semibold block text-brand-text">Local-Only Encrypted Storage</strong>
             <p className="text-xs sm:text-sm text-brand-secondary leading-relaxed">
-              Your API key is never stored on our servers—it is saved locally on your device encrypted with AES-256-GCM. We collect zero data on you and your queries. Requests are evaluated by Google Gemini under its own independent AI terms.
+              Your API key is never stored in plain text or saved to our databases. It is encrypted in your browser using AES-256-GCM. We collect zero tracking data on your queries.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-brand-text mb-1.5">Paste Gemini API Key</label>
+            <label className="block text-sm font-semibold text-brand-text mb-1.5">Paste Groq API Key</label>
             <input
               type="password"
-              placeholder="AIzaSy..."
+              placeholder="gsk_..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               required
@@ -139,13 +140,13 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
             <a
-              href="https://www.youtube.com/results?search_query=how+to+create+google+gemini+api+key"
+              href="https://console.groq.com/keys"
               target="_blank"
               rel="noreferrer"
               className="text-sm text-brand-muted hover:text-brand-text flex items-center gap-1.5 transition"
             >
-              <Video className="w-4 h-4 text-brand-ai" />
-              Watch 1-min tutorial video
+              <ExternalLink className="w-4 h-4 text-brand-ai" />
+              <span>Manage keys in Groq Console</span>
             </a>
 
             <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
@@ -159,11 +160,18 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 </button>
               )}
               <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-brand-border rounded-full hover:bg-brand-elevated text-brand-secondary transition text-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
                 type="submit"
                 disabled={status === 'saving'}
-                className="bg-brand-primary hover:bg-brand-hover text-brand-primary-text text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="px-5 py-2 bg-brand-primary hover:bg-brand-hover text-brand-primary-text font-semibold rounded-full transition shadow-sm hover:shadow active:scale-95 text-sm cursor-pointer disabled:opacity-50"
               >
-                {status === 'saving' ? 'Encrypting & Saving...' : 'Save Locally'}
+                {status === 'saving' ? 'Encrypting...' : 'Save Encrypted Key'}
               </button>
             </div>
           </div>

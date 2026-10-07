@@ -48,11 +48,11 @@ export const AboutPage: React.FC = () => {
 
         <div className="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-7 shadow-sm space-y-3 transition-all hover:border-brand-border-strong hover:shadow-md">
           <div className="w-12 h-12 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center text-brand-ai">
-            <Search className="w-6 h-6" />
+            <Sparkles className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-brand-text text-base sm:text-lg">Prompt & Search Grounding</h3>
+          <h3 className="font-bold text-brand-text text-base sm:text-lg">Contextual Topics & Instructions</h3>
           <p className="text-sm text-brand-secondary leading-relaxed">
-            Provide any conceptual topic prompt. Toggle Google Search grounding to retrieve real-time facts, research citations, and up-to-date industry terminology.
+            Provide any conceptual topic prompt or study material. Specify how questions should be framed, target difficulty, and depth.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export const AboutPage: React.FC = () => {
           <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-5 space-y-2">
             <span className="font-bold text-brand-text text-base block">2. Unlimited Personal Key</span>
             <p className="text-brand-secondary leading-relaxed">
-              Connect your personal free Google Gemini API key from Google AI Studio to generate unlimited quizzes with up to 50 questions each.
+              Connect your personal Groq API key from Groq Cloud to generate unlimited quizzes with up to 50 questions each.
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export const AboutPage: React.FC = () => {
             </span>
           </div>
           <p className="text-brand-secondary pl-7 leading-relaxed">
-            We collect zero data on you and your queries. Any prompt processing and logging performed by the Google Gemini model itself is governed under Google's independent AI terms and has nothing to do with us as a company.
+            We collect zero data on you and your queries. Any prompt processing and logging performed by the Groq model itself is governed under Groq's independent AI terms and has nothing to do with us as a company.
           </p>
         </div>
       </section>
@@ -116,8 +116,8 @@ export const AboutPage: React.FC = () => {
             <p className="leading-relaxed">Built in a strict TypeScript monorepo using Fastify 5, Drizzle ORM, and PostgreSQL 16 for type-safe persistence and high throughput.</p>
           </div>
           <div className="space-y-1">
-            <strong className="block text-brand-text font-semibold">Structured Gemini Tool Calling</strong>
-            <p className="leading-relaxed">Questions are synthesized via native Gemini function calling rather than markdown parsing, eliminating schema hallucinations.</p>
+            <strong className="block text-brand-text font-semibold">Structured Groq Output & Multi-Pass Repair</strong>
+            <p className="leading-relaxed">Questions are synthesized via strict JSON Schema on Groq with automated semantic validation and bounded self-correction loops.</p>
           </div>
           <div className="space-y-1">
             <strong className="block text-brand-text font-semibold">Strict Resource Guardrails</strong>

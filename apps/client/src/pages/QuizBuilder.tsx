@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  Upload,
-  FileText,
-  Search,
   Sparkles,
   AlertTriangle,
   Clock,
   BookOpen,
-  X,
   Layers,
-  Gauge
+  Gauge,
+  Plus,
+  FileText
 } from 'lucide-react';
 import { getLocalApiKey } from '../utils/crypto';
 
@@ -19,13 +17,13 @@ export const QuizBuilderPage: React.FC = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<'prompt' | 'document'>('prompt');
   const [prompt, setPrompt] = useState('');
-  const [researchEnabled, setResearchEnabled] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [showAddFileMenu, setShowAddFileMenu] = useState(false);
 
   const maxAllowedQuestions = user?.hasCustomKey ? 50 : 10;
-  const [questionCount, setQuestionCount] = useState<number>(Math.max(5, Math.min(10, maxAllowedQuestions)));
+  const [questionCount, setQuestionCount] = useState<number>(
+    Math.max(5, Math.min(10, maxAllowedQuestions))
+  );
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [depth, setDepth] = useState<'foundational' | 'in_depth'>('foundational');
   const [quizMode, setQuizMode] = useState<'learning' | 'exam'>('learning');
@@ -35,78 +33,45 @@ export const QuizBuilderPage: React.FC = () => {
   const [loadingStage, setLoadingStage] = useState('');
   const [error, setError] = useState('');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
-
-    if (selected.size > 20 * 1024 * 1024) {
-      setError('File exceeds 20MB limit. Please upload a smaller document.');
-      setFile(null);
-      return;
-    }
-    setError('');
-    setFile(selected);
-  };
-
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!prompt.trim()) {
+      setError('Please enter a topic prompt or paste source material.');
+      return;
+    }
+
     setLoading(true);
-    setLoadingStage(mode === 'document' ? 'Extracting document text...' : 'Researching topic concepts...');
+    setLoadingStage('Connecting to Groq engine...');
 
     try {
       const localKey = await getLocalApiKey();
       const customHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       };
       if (localKey) {
-        customHeaders['x-gemini-api-key'] = localKey;
+        customHeaders['x-groq-api-key'] = localKey;
+        customHeaders['x-custom-api-key'] = localKey;
       }
 
-      let res: Response;
-
-      if (mode === 'document') {
-        if (!file) throw new Error('Please select a PDF or DOCX file to upload.');
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('data', JSON.stringify({
+      setLoadingStage('Structuring questions with Groq...');
+      const res = await fetch('/api/generator/generate', {
+        method: 'POST',
+        headers: customHeaders,
+        body: JSON.stringify({
+          prompt,
           questionCount,
           difficulty,
           depth,
+          allowedTypes: ['single_choice', 'true_false'],
           settings: {
             mode: quizMode,
             timeLimitMinutes
           }
-        }));
-
-        setLoadingStage('Generating structured questions with Gemini...');
-        res = await fetch('/api/generator/generate', {
-          method: 'POST',
-          headers: customHeaders,
-          body: formData
-        });
-      } else {
-        if (!prompt.trim()) throw new Error('Please enter a topic prompt.');
-        setLoadingStage(researchEnabled ? 'Searching the web for latest facts...' : 'Structuring questions with Gemini...');
-        res = await fetch('/api/generator/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...customHeaders
-          },
-          body: JSON.stringify({
-            prompt,
-            researchEnabled,
-            questionCount,
-            difficulty,
-            depth,
-            settings: {
-              mode: quizMode,
-              timeLimitMinutes
-            }
-          })
-        });
-      }
+        })
+      });
 
       const data = await res.json();
       if (!res.ok) {
@@ -127,101 +92,76 @@ export const QuizBuilderPage: React.FC = () => {
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">Create AI Quiz</h1>
         <p className="text-sm sm:text-base text-brand-secondary mt-1">
-          Synthesize structured, pedagogical assessments from raw documents or research topics with Gemini 3.8 Flash.
+          Synthesize structured, pedagogical assessments with Groq <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">openai/gpt-oss-120b</code>.
         </p>
       </div>
 
       <form onSubmit={handleGenerate} className="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-7 transition-colors">
-        {/* Source Switcher */}
-        <div className="grid grid-cols-2 gap-2 p-1.5 bg-brand-elevated rounded-2xl border border-brand-border">
-          <button
-            type="button"
-            onClick={() => setMode('prompt')}
-            className={`py-3 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 ${
-              mode === 'prompt'
-                ? 'bg-brand-card text-brand-text shadow-sm border border-brand-border'
-                : 'text-brand-secondary hover:text-brand-text'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-brand-ai" />
-            <span>From Topic Prompt</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('document')}
-            className={`py-3 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 ${
-              mode === 'document'
-                ? 'bg-brand-card text-brand-text shadow-sm border border-brand-border'
-                : 'text-brand-secondary hover:text-brand-text'
-            }`}
-          >
-            <Upload className="w-4 h-4 text-brand-ai" />
-            <span>From Document (PDF/DOCX)</span>
-          </button>
-        </div>
-
-        {/* Ingestion Input Container */}
-        {mode === 'prompt' ? (
-          <div className="space-y-3">
+        {/* Unified Prompt & Source Material Input Area */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
             <label className="block text-sm font-semibold text-brand-text">
-              Topic or Subject Prompt
+              Topic, Source Material & Question Instructions
             </label>
+            <span className="text-xs text-brand-muted">
+              Paste text or define curriculum
+            </span>
+          </div>
+
+          <div className="relative bg-brand-elevated/40 border border-brand-border rounded-2xl p-3.5 focus-within:ring-2 focus-within:ring-brand-ai focus-within:border-brand-ai transition">
             <textarea
-              rows={3}
+              rows={4}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. Asynchronous event loop in JavaScript, microtask queues, and process.nextTick"
-              className="w-full text-sm sm:text-base p-3.5 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
+              placeholder="Enter your quiz topic, paste study notes/source material, and specify how questions should be framed or which concepts to test..."
+              className="w-full text-sm sm:text-base bg-transparent text-brand-text placeholder:text-brand-muted focus:outline-none resize-y min-h-[96px]"
             />
-            <label className="flex items-center gap-2.5 cursor-pointer text-sm text-brand-secondary select-none">
-              <input
-                type="checkbox"
-                checked={researchEnabled}
-                onChange={(e) => setResearchEnabled(e.target.checked)}
-                className="w-4 h-4 rounded border-brand-border text-brand-primary focus:ring-brand-ai accent-brand-primary"
-              />
-              <span className="flex items-center gap-1.5 font-medium text-brand-text">
-                <Search className="w-4 h-4 text-brand-ai" />
-                Enable Google Search grounding for real-time web verification
-              </span>
-            </label>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-brand-text">
-              Upload Single Document (PDF or DOCX, max 20MB)
-            </label>
-            <div className="border-2 border-dashed border-brand-border rounded-2xl p-6 sm:p-8 text-center hover:border-brand-border-strong transition cursor-pointer relative bg-brand-elevated/40">
-              <input
-                type="file"
-                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-              />
-              <FileText className="w-10 h-10 text-brand-muted mx-auto mb-2" />
-              {file ? (
-                <div className="flex items-center justify-center gap-2 text-brand-text font-semibold text-sm sm:text-base">
-                  <span>{file.name}</span>
-                  <span className="text-xs text-brand-muted">({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFile(null);
-                    }}
-                    className="p-1 rounded-full hover:bg-brand-elevated text-brand-muted hover:text-brand-text"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="text-sm text-brand-secondary">
-                  <span className="font-semibold text-brand-ai">Click to upload</span> or drag and drop PDF or DOCX file
-                </div>
-              )}
+
+            {/* In-Input Toolbar with + Icon */}
+            <div className="pt-2.5 border-t border-brand-border/60 flex flex-wrap items-center justify-between gap-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowAddFileMenu((prev) => !prev)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition cursor-pointer active:scale-95 ${
+                    showAddFileMenu
+                      ? 'bg-brand-elevated text-brand-text border-brand-border-strong shadow-xs'
+                      : 'hover:bg-brand-elevated text-brand-secondary border-brand-border'
+                  }`}
+                  title="Attach source file"
+                >
+                  <Plus className="w-4 h-4 text-brand-ai" />
+                  <span>Add file</span>
+                </button>
+
+                {showAddFileMenu && (
+                  <div className="absolute left-0 mt-2 z-20 w-80 p-3.5 bg-brand-card border border-brand-border rounded-2xl shadow-xl space-y-2 animate-fade-in">
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl border border-brand-border/60 bg-brand-elevated/50 opacity-60 cursor-not-allowed text-left"
+                    >
+                      <div className="flex items-center gap-2 text-xs font-semibold text-brand-text">
+                        <FileText className="w-4 h-4 text-brand-muted" />
+                        <span>Upload Document (PDF / DOCX)</span>
+                      </div>
+                      <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-brand-warning/15 text-brand-warning border border-brand-warning/30">
+                        Disabled
+                      </span>
+                    </button>
+                    <p className="text-[11px] text-brand-muted leading-relaxed">
+                      Document uploads are temporarily disabled. Cloudinary privacy pipeline with automated timed deletion will be available soon.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-xs text-brand-muted">
+                {prompt.trim().length > 0 ? `${prompt.trim().length} chars` : 'Topic or source required'}
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Centered Question Count Slider Section */}
         <div className="p-5 sm:p-6 bg-brand-elevated border border-brand-border rounded-2xl space-y-4">
@@ -310,7 +250,7 @@ export const QuizBuilderPage: React.FC = () => {
                 <div>
                   <div className="font-bold text-sm text-brand-text">Learning Mode</div>
                   <div className="text-xs text-brand-secondary mt-0.5">
-                    Instant feedback and detailed rationale revealed after every answer check.
+                    Instant feedback and detailed per-option rationale revealed after checking answers.
                   </div>
                 </div>
               </button>
@@ -353,12 +293,12 @@ export const QuizBuilderPage: React.FC = () => {
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              <span>Generate Quiz with Gemini</span>
+              <span>Generate Quiz with Groq</span>
             </>
           )}
         </button>
 
-        {/* Recommended Scope Policy Callout — Placed BELOW the create button for enhanced visibility */}
+        {/* Recommended Scope Policy Callout */}
         <div className="bg-brand-elevated border border-brand-border rounded-2xl p-4 sm:p-5 flex gap-3.5 text-brand-secondary text-sm leading-relaxed transition-colors">
           <AlertTriangle className="w-5 h-5 text-brand-warning shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -366,7 +306,7 @@ export const QuizBuilderPage: React.FC = () => {
               Recommended Scope Policy
             </strong>
             <p className="text-brand-secondary text-sm">
-              For best question quality and accuracy, keep your topic or document scope specific (e.g. <em>"Photosynthesis light reactions"</em> rather than broad <em>"Biology"</em>). If you require questions across a broad curriculum, select <strong>"Foundational"</strong> depth so questions focus cleanly on surface principles rather than deep nested subtopics.
+              For best question quality and accuracy, keep your topic or source material scope specific (e.g. <em>"Photosynthesis light reactions"</em> rather than broad <em>"Biology"</em>). If you require questions across a broad curriculum, select <strong>"Foundational"</strong> depth so questions focus cleanly on surface principles rather than deep nested subtopics.
             </p>
           </div>
         </div>
