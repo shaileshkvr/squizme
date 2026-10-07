@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { validatePassword } from '@squizme/shared';
@@ -7,7 +7,6 @@ import {
   Sparkles,
   Key,
   LogOut,
-  PlusCircle,
   Info,
   Shield,
   Sun,
@@ -24,19 +23,6 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
   const { user, logout, updateName, changePassword } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Scroll detection for dynamic Create Quiz button
-  const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 120);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const showCreateButton = user && (location.pathname !== '/' || isScrolled);
 
   // Profile popup state
   const [profileOpen, setProfileOpen] = useState(false);
@@ -178,17 +164,6 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
           >
             {isDark ? <Sun className="w-4 h-4 text-[#D2AE69]" /> : <Moon className="w-4 h-4 text-[#5A301D]" />}
           </button>
-
-          {/* Dynamic Create Quiz Button */}
-          {showCreateButton && (
-            <Link
-              to="/quizzes/new"
-              className="flex items-center gap-1.5 bg-[#5A301D] hover:bg-[#472313] text-[#FFFDF8] dark:bg-[#C28A69] dark:hover:bg-[#D09A78] dark:text-[#1D0D00] text-xs sm:text-sm font-semibold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-sm hover:shadow transition-all duration-200 active:scale-95 animate-fade-in"
-            >
-              <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>Create</span>
-            </Link>
-          )}
 
           {user ? (
             /* User Avatar & Profile Popup Trigger */
