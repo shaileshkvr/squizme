@@ -25,3 +25,12 @@
 - [x] Task 23: Floating 80% island navbar with rounded pill geometry and top margin lift
 - [x] Task 24: Redesigned landing hero with punchy tagline and 3D mouse-tilt interactive quiz card
 - [x] Task 25: Live update development infrastructure (`docker-compose.dev.yml`, `dev:all`) and mirrored documentation
+- [x] Task 26: Split user name storage into firstName and lastName across schemas, database, auth, and profile UI
+- [x] Task 27: Floating outlined field labels on Auth pages and content-aligned Navbar width
+- [x] Task 28: Update shared quiz schemas for Groq generation and per-option explanations (`packages/shared`)
+- [x] Task 29: Implement direct HTTP Groq completions client with strict JSON Schema (`apps/server/src/modules/generator/groq.ts`)
+- [x] Task 30: Implement Zod semantic validator and bounded repair loop (`apps/server/src/modules/generator/`)
+- [x] Task 31: Clean up obsolete Gemini tools and verify quiz routes with PDF upload blocking
+- [x] Task 32: Run monorepo test verification and update 1:1 mirrored documentation
+- [x] Task 33: Client UI overhaul for Groq transition, unified prompt input with `+` file attachment (disabled), and Groq Cloud onboarding modal
+- [x] Task 34: Password seek/hide toggle on password inputs, universal Escape/outside focus popup dismissal, and ApiKeyModal button refinements
