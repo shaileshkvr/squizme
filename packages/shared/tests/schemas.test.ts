@@ -6,7 +6,8 @@ import {
   RegisterRequestSchema,
   LoginRequestSchema,
   UpdateApiKeySchema,
-  SubmitAttemptSchema
+  SubmitAttemptSchema,
+  GroqGeneratedQuizSchema
 } from '../src/index';
 
 describe('Shared Schemas', () => {
@@ -123,5 +124,39 @@ describe('Shared Schemas', () => {
       expect(parsed.data.showExplanationsDuring).toBe(true);
       expect(parsed.data.timeLimitMinutes).toBeNull();
     }
+  });
+
+  it('validates Groq generated quiz output schema with per-option explanations', () => {
+    const validGroqQuiz = {
+      title: 'JavaScript Event Loop',
+      questions: [
+        {
+          question: 'Where do Promise callbacks execute?',
+          type: 'single_choice',
+          options: [
+            { label: 'Microtask Queue', isTrue: true, explanation: 'Promise callbacks are queued in the microtask queue.' },
+            { label: 'Macrotask Queue', isTrue: false, explanation: 'Macrotasks are used for setTimeout and setInterval.' },
+            { label: 'Call Stack immediately', isTrue: false, explanation: 'They execute asynchronously after the stack clears.' },
+            { label: 'Render Queue', isTrue: false, explanation: 'Render queue handles UI paint operations.' }
+          ]
+        }
+      ]
+    };
+    const parsed = GroqGeneratedQuizSchema.safeParse(validGroqQuiz);
+    expect(parsed.success).toBe(true);
+
+    const invalidGroqQuiz = {
+      title: 'Incomplete Quiz',
+      questions: [
+        {
+          question: 'Missing explanations',
+          type: 'single_choice',
+          options: [
+            { label: 'Option A', isTrue: true, explanation: '' }
+          ]
+        }
+      ]
+    };
+    expect(GroqGeneratedQuizSchema.safeParse(invalidGroqQuiz).success).toBe(false);
   });
 });

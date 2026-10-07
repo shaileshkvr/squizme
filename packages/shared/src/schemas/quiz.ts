@@ -9,7 +9,26 @@ export const QuestionTypeSchema = z.enum([
 
 export const QuestionOptionSchema = z.object({
   id: z.string(),
-  text: z.string()
+  text: z.string(),
+  isTrue: z.boolean().optional(),
+  explanation: z.string().optional()
+});
+
+export const QuizOptionSchema = z.object({
+  label: z.string().min(1, 'Option label cannot be empty'),
+  isTrue: z.boolean(),
+  explanation: z.string().min(1, 'Option explanation cannot be empty')
+});
+
+export const RawGeneratedQuestionSchema = z.object({
+  question: z.string().min(1, 'Question text cannot be empty'),
+  type: z.enum(['single_choice', 'true_false']).default('single_choice'),
+  options: z.array(QuizOptionSchema)
+});
+
+export const GroqGeneratedQuizSchema = z.object({
+  title: z.string().min(1, 'Quiz title cannot be empty'),
+  questions: z.array(RawGeneratedQuestionSchema)
 });
 
 export const QuestionSchema = z.object({
@@ -42,6 +61,10 @@ export const GenerateQuizRequestSchema = z.object({
 });
 
 export type QuestionType = z.infer<typeof QuestionTypeSchema>;
+export type QuestionOption = z.infer<typeof QuestionOptionSchema>;
+export type QuizOption = z.infer<typeof QuizOptionSchema>;
+export type RawGeneratedQuestion = z.infer<typeof RawGeneratedQuestionSchema>;
+export type GroqGeneratedQuiz = z.infer<typeof GroqGeneratedQuizSchema>;
 export type Question = z.infer<typeof QuestionSchema>;
 export type QuizSettings = z.infer<typeof QuizSettingsSchema>;
 export type GenerateQuizRequest = z.infer<typeof GenerateQuizRequestSchema>;
