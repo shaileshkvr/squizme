@@ -1,6 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, FileText, Search, Zap, Key, ShieldCheck, ArrowRight } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  Sparkles,
+  FileText,
+  Search,
+  Zap,
+  Key,
+  ShieldCheck,
+  ArrowRight,
+} from "lucide-react";
 
 export const AboutPage: React.FC = () => {
   return (
@@ -12,10 +20,13 @@ export const AboutPage: React.FC = () => {
           <span>Intelligent Quiz Engineering</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-brand-text tracking-tight leading-tight">
-          Turn your notes and ideas into <span className="text-brand-primary">mastery-ready quizzes</span>.
+          Turn your notes and ideas into{" "}
+          <span className="text-brand-primary">mastery-ready quizzes</span>.
         </h1>
         <p className="text-base sm:text-lg text-brand-secondary max-w-2xl mx-auto leading-relaxed">
-          Squizme is a privacy-first AI quiz builder designed to help students, developers, and researchers test their understanding with structured precision.
+          Squizme is a privacy-first AI quiz builder designed to help students,
+          developers, and researchers test their understanding with structured
+          precision.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
           <Link
@@ -40,9 +51,13 @@ export const AboutPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center text-brand-ai">
             <FileText className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-brand-text text-base sm:text-lg">Document Ingestion</h3>
+          <h3 className="font-bold text-brand-text text-base sm:text-lg">
+            Document Ingestion
+          </h3>
           <p className="text-sm text-brand-secondary leading-relaxed">
-            Upload PDF or DOCX files up to 20MB. Squizme parses raw lecture slides, syllabi, or textbook chapters to extract core concepts and formulate targeted questions.
+            Upload PDF or DOCX files up to 20MB. Squizme parses raw lecture
+            slides, syllabi, or textbook chapters to extract core concepts and
+            formulate targeted questions.
           </p>
         </div>
 
@@ -50,9 +65,12 @@ export const AboutPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center text-brand-ai">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-brand-text text-base sm:text-lg">Contextual Topics & Instructions</h3>
+          <h3 className="font-bold text-brand-text text-base sm:text-lg">
+            Contextual Topics & Instructions
+          </h3>
           <p className="text-sm text-brand-secondary leading-relaxed">
-            Provide any conceptual topic prompt or study material. Specify how questions should be framed, target difficulty, and depth.
+            Provide any conceptual topic prompt or study material. Specify how
+            questions should be framed, target difficulty, and depth.
           </p>
         </div>
 
@@ -60,9 +78,13 @@ export const AboutPage: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center text-brand-ai">
             <Zap className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-brand-text text-base sm:text-lg">Dual Learning Modes</h3>
+          <h3 className="font-bold text-brand-text text-base sm:text-lg">
+            Dual Learning Modes
+          </h3>
           <p className="text-sm text-brand-secondary leading-relaxed">
-            Practice in <strong>Learning Mode</strong> for instant rationale breakdowns, or challenge yourself in <strong>Exam Mode</strong> with countdown timers and final scorecard reviews.
+            Practice in <strong>Learning Mode</strong> for instant rationale
+            breakdowns, or challenge yourself in <strong>Exam Mode</strong> with
+            countdown timers and final scorecard reviews.
           </p>
         </div>
       </section>
@@ -74,22 +96,34 @@ export const AboutPage: React.FC = () => {
             <Key className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-brand-text">Bring-Your-Own-Key (BYO-Key) Model</h2>
-            <p className="text-sm text-brand-secondary mt-0.5">Zero subscription fees. Complete control over your quiz generation capacity.</p>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-brand-text">
+              Bring-Your-Own-Key (BYO-Key) Model
+            </h2>
+            <p className="text-sm text-brand-secondary mt-0.5">
+              Zero subscription fees. Complete control over your quiz generation
+              capacity.
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-5 space-y-2">
-            <span className="font-bold text-brand-text text-base block">1. Free Starter Tier</span>
+            <span className="font-bold text-brand-text text-base block">
+              1. Free Starter Tier
+            </span>
             <p className="text-brand-secondary leading-relaxed">
-              Every registered user receives <strong>2 free host-funded quizzes</strong> (up to 10 questions each) without needing an API key.
+              Every registered user receives{" "}
+              <strong>2 free host-funded quizzes</strong> (up to 10 questions
+              each) without needing an API key.
             </p>
           </div>
           <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-5 space-y-2">
-            <span className="font-bold text-brand-text text-base block">2. Unlimited Personal Key</span>
+            <span className="font-bold text-brand-text text-base block">
+              2. Unlimited Personal Key
+            </span>
             <p className="text-brand-secondary leading-relaxed">
-              Connect your personal Groq API key from Groq Cloud to generate unlimited quizzes with up to 50 questions each.
+              Connect your personal Groq API key from Groq Cloud to generate
+              unlimited quizzes with up to 50 questions each.
             </p>
           </div>
         </div>
@@ -98,34 +132,61 @@ export const AboutPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-brand-success shrink-0" />
             <span className="font-semibold text-brand-text">
-              API keys are never stored on our servers—they are encrypted with AES-256-GCM and saved locally on your device.
+              API keys are never stored on our servers—they are encrypted with
+              AES-256-GCM and saved locally on your device.
             </span>
           </div>
           <p className="text-brand-secondary pl-7 leading-relaxed">
-            We collect zero data on you and your queries. Any prompt processing and logging performed by the Groq model itself is governed under Groq's independent AI terms and has nothing to do with us as a company.
+            We collect zero data on you and your queries. Any prompt processing
+            and logging performed by the Groq model itself is governed under
+            Groq's independent AI terms and has nothing to do with us as a
+            company.
           </p>
         </div>
       </section>
 
       {/* Technical Architecture */}
       <section className="bg-brand-card border border-brand-border rounded-3xl p-7 sm:p-8 shadow-sm space-y-5 transition-colors">
-        <h2 className="text-xl font-bold text-brand-text">Engineering Philosophy</h2>
+        <h2 className="text-xl font-bold text-brand-text">
+          Engineering Philosophy
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm text-brand-secondary">
           <div className="space-y-1">
-            <strong className="block text-brand-text font-semibold">Modular Monolith</strong>
-            <p className="leading-relaxed">Built in a strict TypeScript monorepo using Fastify 5, Drizzle ORM, and PostgreSQL 16 for type-safe persistence and high throughput.</p>
+            <strong className="block text-brand-text font-semibold">
+              Modular Monolith
+            </strong>
+            <p className="leading-relaxed">
+              Built in a strict TypeScript monorepo using Fastify 5, Drizzle
+              ORM, and PostgreSQL 16 for type-safe persistence and high
+              throughput.
+            </p>
           </div>
           <div className="space-y-1">
-            <strong className="block text-brand-text font-semibold">Structured Groq Output & Multi-Pass Repair</strong>
-            <p className="leading-relaxed">Questions are synthesized via strict JSON Schema on Groq with automated semantic validation and bounded self-correction loops.</p>
+            <strong className="block text-brand-text font-semibold">
+              Structured Groq Output & Multi-Pass Repair
+            </strong>
+            <p className="leading-relaxed">
+              Questions are synthesized via strict JSON Schema on Groq with
+              automated semantic validation and bounded self-correction loops.
+            </p>
           </div>
           <div className="space-y-1">
-            <strong className="block text-brand-text font-semibold">Strict Resource Guardrails</strong>
-            <p className="leading-relaxed">Documents are capped at 20MB per upload with in-memory parsing via `pdf-parse` and `mammoth` to prevent server memory bloat.</p>
+            <strong className="block text-brand-text font-semibold">
+              Strict Resource Guardrails
+            </strong>
+            <p className="leading-relaxed">
+              Documents are capped at 20MB per upload with in-memory parsing via
+              `pdf-parse` and `mammoth` to prevent server memory bloat.
+            </p>
           </div>
           <div className="space-y-1">
-            <strong className="block text-brand-text font-semibold">Containerized Deployment</strong>
-            <p className="leading-relaxed">Multi-stage Alpine Docker setup serving static assets and API routes in a single reproducible image.</p>
+            <strong className="block text-brand-text font-semibold">
+              Containerized Deployment
+            </strong>
+            <p className="leading-relaxed">
+              Multi-stage Alpine Docker setup serving static assets and API
+              routes in a single reproducible image.
+            </p>
           </div>
         </div>
       </section>

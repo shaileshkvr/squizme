@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Sparkles,
   AlertTriangle,
@@ -9,73 +9,117 @@ import {
   Layers,
   Gauge,
   Plus,
-  FileText
-} from 'lucide-react';
-import { getLocalApiKey } from '../utils/crypto';
+  FileText,
+} from "lucide-react";
+import { getLocalApiKey } from "../utils/crypto";
 
 export const QuizBuilderPage: React.FC = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [showAddFileMenu, setShowAddFileMenu] = useState(false);
+  const addFileRef = useRef<HTMLDivElement>(null);
+
+  // Close add file popup on click outside, focus outside, or Escape
+  useEffect(() => {
+    if (!showAddFileMenu) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        addFileRef.current &&
+        !addFileRef.current.contains(e.target as Node)
+      ) {
+        setShowAddFileMenu(false);
+      }
+    };
+    const handleFocusOutside = (e: FocusEvent) => {
+      if (
+        addFileRef.current &&
+        !addFileRef.current.contains(e.target as Node)
+      ) {
+        setShowAddFileMenu(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowAddFileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("focusin", handleFocusOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleFocusOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showAddFileMenu]);
 
   const maxAllowedQuestions = user?.hasCustomKey ? 50 : 10;
   const [questionCount, setQuestionCount] = useState<number>(
-    Math.max(5, Math.min(10, maxAllowedQuestions))
+    Math.max(5, Math.min(10, maxAllowedQuestions)),
   );
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [depth, setDepth] = useState<'foundational' | 'in_depth'>('foundational');
-  const [quizMode, setQuizMode] = useState<'learning' | 'exam'>('learning');
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "medium",
+  );
+  const [depth, setDepth] = useState<"foundational" | "in_depth">(
+    "foundational",
+  );
+  const [quizMode, setQuizMode] = useState<"learning" | "exam">("learning");
   const [timeLimitMinutes, setTimeLimitMinutes] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [loadingStage, setLoadingStage] = useState('');
-  const [error, setError] = useState('');
+  const [loadingStage, setLoadingStage] = useState("");
+  const [error, setError] = useState("");
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!prompt.trim()) {
-      setError('Please enter a topic prompt or paste source material.');
+      setError("Please enter a topic prompt or paste source material.");
       return;
     }
 
     setLoading(true);
-    setLoadingStage('Connecting to Groq engine...');
+    setLoadingStage("Connecting to Groq engine...");
 
     try {
       const localKey = await getLocalApiKey();
       const customHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       };
       if (localKey) {
-        customHeaders['x-groq-api-key'] = localKey;
-        customHeaders['x-custom-api-key'] = localKey;
+        customHeaders["x-groq-api-key"] = localKey;
+        customHeaders["x-custom-api-key"] = localKey;
       }
 
-      setLoadingStage('Structuring questions with Groq...');
-      const res = await fetch('/api/generator/generate', {
-        method: 'POST',
+      setLoadingStage("Structuring questions with Groq...");
+      const res = await fetch("/api/generator/generate", {
+        method: "POST",
         headers: customHeaders,
         body: JSON.stringify({
           prompt,
           questionCount,
           difficulty,
           depth,
-          allowedTypes: ['single_choice', 'true_false'],
+          allowedTypes: ["single_choice", "true_false"],
           settings: {
             mode: quizMode,
-            timeLimitMinutes
-          }
-        })
+            timeLimitMinutes,
+          },
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || data.error || 'Quiz generation failed.');
+        throw new Error(
+          data.message || data.error || "Quiz generation failed.",
+        );
       }
 
       navigate(`/quizzes/${data.id}/play`);
@@ -90,13 +134,22 @@ export const QuizBuilderPage: React.FC = () => {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">Create AI Quiz</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">
+          Create AI Quiz
+        </h1>
         <p className="text-sm sm:text-base text-brand-secondary mt-1">
-          Synthesize structured, pedagogical assessments with Groq <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">openai/gpt-oss-120b</code>.
+          Synthesize structured, pedagogical assessments with Groq{" "}
+          <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">
+            openai/gpt-oss-120b
+          </code>
+          .
         </p>
       </div>
 
-      <form onSubmit={handleGenerate} className="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-7 transition-colors">
+      <form
+        onSubmit={handleGenerate}
+        className="bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-7 transition-colors"
+      >
         {/* Unified Prompt & Source Material Input Area */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -119,14 +172,14 @@ export const QuizBuilderPage: React.FC = () => {
 
             {/* In-Input Toolbar with + Icon */}
             <div className="pt-2.5 border-t border-brand-border/60 flex flex-wrap items-center justify-between gap-2">
-              <div className="relative">
+              <div className="relative" ref={addFileRef}>
                 <button
                   type="button"
                   onClick={() => setShowAddFileMenu((prev) => !prev)}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition cursor-pointer active:scale-95 ${
                     showAddFileMenu
-                      ? 'bg-brand-elevated text-brand-text border-brand-border-strong shadow-xs'
-                      : 'hover:bg-brand-elevated text-brand-secondary border-brand-border'
+                      ? "bg-brand-elevated text-brand-text border-brand-border-strong shadow-xs"
+                      : "hover:bg-brand-elevated text-brand-secondary border-brand-border"
                   }`}
                   title="Attach source file"
                 >
@@ -150,14 +203,18 @@ export const QuizBuilderPage: React.FC = () => {
                       </span>
                     </button>
                     <p className="text-[11px] text-brand-muted leading-relaxed">
-                      Document uploads are temporarily disabled. Cloudinary privacy pipeline with automated timed deletion will be available soon.
+                      Document uploads are temporarily disabled. Cloudinary
+                      privacy pipeline with automated timed deletion will be
+                      available soon.
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="text-xs text-brand-muted">
-                {prompt.trim().length > 0 ? `${prompt.trim().length} chars` : 'Topic or source required'}
+                {prompt.trim().length > 0
+                  ? `${prompt.trim().length} chars`
+                  : "Topic or source required"}
               </div>
             </div>
           </div>
@@ -170,8 +227,12 @@ export const QuizBuilderPage: React.FC = () => {
               Target Question Count
             </span>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-card border border-brand-border shadow-sm">
-              <span className="text-2xl font-black text-brand-primary">{questionCount}</span>
-              <span className="text-sm font-medium text-brand-secondary">questions</span>
+              <span className="text-2xl font-black text-brand-primary">
+                {questionCount}
+              </span>
+              <span className="text-sm font-medium text-brand-secondary">
+                questions
+              </span>
             </div>
             {!user?.hasCustomKey && (
               <span className="text-xs text-brand-warning font-medium">
@@ -209,8 +270,12 @@ export const QuizBuilderPage: React.FC = () => {
               onChange={(e) => setDepth(e.target.value as any)}
               className="w-full text-sm px-3.5 py-2.5 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
             >
-              <option value="foundational">Foundational (High-level concepts & definitions)</option>
-              <option value="in_depth">In-depth (Detailed mechanics & analytical problems)</option>
+              <option value="foundational">
+                Foundational (High-level concepts & definitions)
+              </option>
+              <option value="in_depth">
+                In-depth (Detailed mechanics & analytical problems)
+              </option>
             </select>
           </div>
 
@@ -239,36 +304,42 @@ export const QuizBuilderPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setQuizMode('learning')}
+                onClick={() => setQuizMode("learning")}
                 className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
-                  quizMode === 'learning'
-                    ? 'border-brand-primary bg-brand-elevated text-brand-text shadow-sm'
-                    : 'border-brand-border hover:border-brand-border-strong text-brand-secondary bg-brand-card'
+                  quizMode === "learning"
+                    ? "border-brand-primary bg-brand-elevated text-brand-text shadow-sm"
+                    : "border-brand-border hover:border-brand-border-strong text-brand-secondary bg-brand-card"
                 }`}
               >
                 <BookOpen className="w-5 h-5 text-brand-ai shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-sm text-brand-text">Learning Mode</div>
+                  <div className="font-bold text-sm text-brand-text">
+                    Learning Mode
+                  </div>
                   <div className="text-xs text-brand-secondary mt-0.5">
-                    Instant feedback and detailed per-option rationale revealed after checking answers.
+                    Instant feedback and detailed per-option rationale revealed
+                    after checking answers.
                   </div>
                 </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => setQuizMode('exam')}
+                onClick={() => setQuizMode("exam")}
                 className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
-                  quizMode === 'exam'
-                    ? 'border-brand-primary bg-brand-elevated text-brand-text shadow-sm'
-                    : 'border-brand-border hover:border-brand-border-strong text-brand-secondary bg-brand-card'
+                  quizMode === "exam"
+                    ? "border-brand-primary bg-brand-elevated text-brand-text shadow-sm"
+                    : "border-brand-border hover:border-brand-border-strong text-brand-secondary bg-brand-card"
                 }`}
               >
                 <Clock className="w-5 h-5 text-brand-warning shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-sm text-brand-text">Exam Mode</div>
+                  <div className="font-bold text-sm text-brand-text">
+                    Exam Mode
+                  </div>
                   <div className="text-xs text-brand-secondary mt-0.5">
-                    Timed exam setting with locked hints until full submission and final scorecard.
+                    Timed exam setting with locked hints until full submission
+                    and final scorecard.
                   </div>
                 </div>
               </button>
@@ -306,7 +377,13 @@ export const QuizBuilderPage: React.FC = () => {
               Recommended Scope Policy
             </strong>
             <p className="text-brand-secondary text-sm">
-              For best question quality and accuracy, keep your topic or source material scope specific (e.g. <em>"Photosynthesis light reactions"</em> rather than broad <em>"Biology"</em>). If you require questions across a broad curriculum, select <strong>"Foundational"</strong> depth so questions focus cleanly on surface principles rather than deep nested subtopics.
+              For best question quality and accuracy, keep your topic or source
+              material scope specific (e.g.{" "}
+              <em>"Photosynthesis light reactions"</em> rather than broad{" "}
+              <em>"Biology"</em>). If you require questions across a broad
+              curriculum, select <strong>"Foundational"</strong> depth so
+              questions focus cleanly on surface principles rather than deep
+              nested subtopics.
             </p>
           </div>
         </div>

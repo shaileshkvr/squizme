@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { validatePassword } from '@squizme/shared';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
+import { validatePassword } from "@squizme/shared";
 import {
   Sparkles,
   Key,
@@ -16,10 +16,14 @@ import {
   Check,
   X,
   ChevronDown,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
-export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiKeyModal }) => {
+export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({
+  onOpenApiKeyModal,
+}) => {
   const { user, logout, updateName, changePassword } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -28,37 +32,52 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
   const [profileOpen, setProfileOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Click outside to close popup
+  // Click or focus outside and Escape key to close popup
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
     };
+    const handleFocusOutside = (e: FocusEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setProfileOpen(false);
+      if (e.key === "Escape") setProfileOpen(false);
     };
 
     if (profileOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("focusin", handleFocusOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("focusin", handleFocusOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [profileOpen]);
 
   // Profile editing state
   const [editingName, setEditingName] = useState(false);
-  const [firstNameInput, setFirstNameInput] = useState(user?.firstName || user?.name?.split(' ')[0] || '');
-  const [lastNameInput, setLastNameInput] = useState(user?.lastName ?? (user?.name?.split(' ').slice(1).join(' ') || ''));
+  const [firstNameInput, setFirstNameInput] = useState(
+    user?.firstName || user?.name?.split(" ")[0] || "",
+  );
+  const [lastNameInput, setLastNameInput] = useState(
+    user?.lastName ?? (user?.name?.split(" ").slice(1).join(" ") || ""),
+  );
   const [nameSaving, setNameSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setFirstNameInput(user.firstName || user.name?.split(' ')[0] || '');
-      setLastNameInput(user.lastName !== undefined ? user.lastName : (user.name?.split(' ').slice(1).join(' ') || ''));
+      setFirstNameInput(user.firstName || user.name?.split(" ")[0] || "");
+      setLastNameInput(
+        user.lastName !== undefined
+          ? user.lastName
+          : user.name?.split(" ").slice(1).join(" ") || "",
+      );
     }
   }, [user]);
 
@@ -77,21 +96,28 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
 
   // Password change state
   const [showPasswordChange, setShowPasswordChange] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordTouched, setPasswordTouched] = useState<{ current?: boolean; new?: boolean }>({});
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordTouched, setPasswordTouched] = useState<{
+    current?: boolean;
+    new?: boolean;
+  }>({});
 
   const newPassValidationError = validatePassword(newPassword);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordTouched({ current: true, new: true });
-    setPasswordError('');
+    setPasswordError("");
 
     if (!currentPassword) {
-      setPasswordError('Current password is required.');
+      setPasswordError("Current password is required.");
       return;
     }
 
@@ -100,20 +126,20 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
       return;
     }
 
-    setPasswordStatus('saving');
+    setPasswordStatus("saving");
     try {
       await changePassword(currentPassword, newPassword);
-      setPasswordStatus('success');
-      setCurrentPassword('');
-      setNewPassword('');
+      setPasswordStatus("success");
+      setCurrentPassword("");
+      setNewPassword("");
       setPasswordTouched({});
       setTimeout(() => {
-        setPasswordStatus('idle');
+        setPasswordStatus("idle");
         setShowPasswordChange(false);
       }, 1500);
     } catch (err: any) {
-      setPasswordStatus('error');
-      setPasswordError(err.message || 'Failed to change password');
+      setPasswordStatus("error");
+      setPasswordError(err.message || "Failed to change password");
     }
   };
 
@@ -121,7 +147,6 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
     <header className="sticky top-3 sm:top-5 z-40 max-w-6xl w-full mx-auto px-4 sm:px-6 md:px-8 mb-8 pointer-events-none transition-all duration-300">
       {/* Floating Island Container matching main content width */}
       <div className="pointer-events-auto w-full h-14 sm:h-16 px-4 sm:px-6 rounded-full bg-[#FFFDF8]/95 dark:bg-[#2A160B]/95 backdrop-blur-md border border-[#DDD1C2] dark:border-[#5A3E30] shadow-md hover:shadow-lg dark:shadow-black/50 flex items-center justify-between transition-all duration-200">
-        
         {/* Left: Brand Logo */}
         <div className="flex items-center gap-3">
           <Link
@@ -159,10 +184,14 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full text-[#69594D] dark:text-[#CFC0B1] hover:bg-[#F1EADF] dark:hover:bg-[#3B1E11] transition active:scale-95 cursor-pointer"
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             aria-label="Toggle theme"
           >
-            {isDark ? <Sun className="w-4 h-4 text-[#D2AE69]" /> : <Moon className="w-4 h-4 text-[#5A301D]" />}
+            {isDark ? (
+              <Sun className="w-4 h-4 text-[#D2AE69]" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#5A301D]" />
+            )}
           </button>
 
           {user ? (
@@ -175,10 +204,16 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                 aria-expanded={profileOpen}
               >
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#5A301D] dark:bg-[#C28A69] text-[#FFFDF8] dark:text-[#1D0D00] flex items-center justify-center font-bold text-xs sm:text-sm">
-                  {user.firstName ? user.firstName.charAt(0).toUpperCase() : (user.name ? user.name.charAt(0).toUpperCase() : 'U')}
+                  {user.firstName
+                    ? user.firstName.charAt(0).toUpperCase()
+                    : user.name
+                      ? user.name.charAt(0).toUpperCase()
+                      : "U"}
                 </div>
                 <span className="hidden md:inline text-xs sm:text-sm font-semibold text-[#24150E] dark:text-[#F8F4EB] max-w-[100px] truncate">
-                  {[user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || user.email}
+                  {[user.firstName, user.lastName].filter(Boolean).join(" ") ||
+                    user.name ||
+                    user.email}
                 </span>
                 <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#847366] dark:text-[#A99584]" />
               </button>
@@ -231,8 +266,19 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                             onClick={() => {
                               setEditingName(false);
                               if (user) {
-                                setFirstNameInput(user.firstName || user.name?.split(' ')[0] || '');
-                                setLastNameInput(user.lastName !== undefined ? user.lastName : (user.name?.split(' ').slice(1).join(' ') || ''));
+                                setFirstNameInput(
+                                  user.firstName ||
+                                    user.name?.split(" ")[0] ||
+                                    "",
+                                );
+                                setLastNameInput(
+                                  user.lastName !== undefined
+                                    ? user.lastName
+                                    : user.name
+                                        ?.split(" ")
+                                        .slice(1)
+                                        .join(" ") || "",
+                                );
                               }
                             }}
                             className="px-2.5 py-1 text-xs text-[#847366] dark:text-[#A99584] rounded-xl hover:bg-[#F1EADF] dark:hover:bg-[#3B1E11] cursor-pointer flex items-center gap-1"
@@ -245,7 +291,11 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-sm font-bold text-[#24150E] dark:text-[#F8F4EB]">
-                            {[user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || user.email}
+                            {[user.firstName, user.lastName]
+                              .filter(Boolean)
+                              .join(" ") ||
+                              user.name ||
+                              user.email}
                           </h4>
                           <p className="text-xs sm:text-sm text-[#69594D] dark:text-[#CFC0B1] truncate max-w-[200px]">
                             {user.email}
@@ -265,12 +315,15 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                     <div className="pt-1">
                       {user.hasCustomKey ? (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#E3EEF1] dark:bg-[#1F343B] text-[#315765] dark:text-[#B9D8E1] border border-[#DDD1C2] dark:border-[#5A3E30]">
-                          <Key className="w-3.5 h-3.5" /> BYO Key Active (Unlimited)
+                          <Key className="w-3.5 h-3.5" /> BYO Key Active
+                          (Unlimited)
                         </div>
                       ) : (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F1EADF] dark:bg-[#3B1E11] text-[#69594D] dark:text-[#CFC0B1] border border-[#DDD1C2] dark:border-[#5A3E30]">
                           <Sparkles className="w-3.5 h-3.5 text-[#96733B] dark:text-[#D2AE69]" />
-                          <span>Free Quota: {user.freeGenerationsRemaining}/2 left</span>
+                          <span>
+                            Free Quota: {user.freeGenerationsRemaining}/2 left
+                          </span>
                         </div>
                       )}
                     </div>
@@ -289,7 +342,9 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                         <Key className="w-4 h-4 text-[#416A7A] dark:text-[#79AFC2]" />
                         Groq API Key Settings
                       </span>
-                      <span className="text-xs text-[#847366] dark:text-[#A99584]">Configure</span>
+                      <span className="text-xs text-[#847366] dark:text-[#A99584]">
+                        Configure
+                      </span>
                     </button>
 
                     <button
@@ -302,7 +357,7 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 text-[#847366] dark:text-[#A99584] transition-transform ${
-                          showPasswordChange ? 'rotate-180' : ''
+                          showPasswordChange ? "rotate-180" : ""
                         }`}
                       />
                     </button>
@@ -326,29 +381,63 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                           </div>
                           <div className="relative">
                             <input
-                              type="password"
+                              type={showCurrentPassword ? "text" : "password"}
                               value={currentPassword}
-                              onBlur={() => setPasswordTouched((prev) => ({ ...prev, current: true }))}
+                              onBlur={() =>
+                                setPasswordTouched((prev) => ({
+                                  ...prev,
+                                  current: true,
+                                }))
+                              }
                               onChange={(e) => {
                                 setCurrentPassword(e.target.value);
                                 if (!passwordTouched.current) {
-                                  setPasswordTouched((prev) => ({ ...prev, current: true }));
+                                  setPasswordTouched((prev) => ({
+                                    ...prev,
+                                    current: true,
+                                  }));
                                 }
                               }}
-                              className={`w-full text-sm px-3 py-1.5 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
+                              className={`w-full text-sm px-3 py-1.5 pr-16 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
                                 !passwordTouched.current
-                                  ? 'border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]'
+                                  ? "border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
                                   : currentPassword
-                                  ? 'border-2 border-[#47705B] dark:border-[#82B99A]'
-                                  : 'border-2 border-[#9A4D3F] dark:border-[#D98678]'
+                                    ? "border-2 border-[#47705B] dark:border-[#82B99A]"
+                                    : "border-2 border-[#9A4D3F] dark:border-[#D98678]"
                               }`}
                             />
-                            {passwordTouched.current && currentPassword && (
-                              <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] absolute right-3 top-2 pointer-events-none" />
-                            )}
-                            {passwordTouched.current && !currentPassword && (
-                              <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] absolute right-3 top-2 pointer-events-none" />
-                            )}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10">
+                              {passwordTouched.current && currentPassword && (
+                                <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] pointer-events-none" />
+                              )}
+                              {passwordTouched.current && !currentPassword && (
+                                <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] pointer-events-none" />
+                              )}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowCurrentPassword((prev) => !prev)
+                                }
+                                className="p-1 rounded-lg text-[#69594D] dark:text-[#CFC0B1] hover:text-[#24150E] dark:hover:text-[#F8F4EB] transition cursor-pointer"
+                                aria-label={
+                                  showCurrentPassword
+                                    ? "Hide current password"
+                                    : "Show current password"
+                                }
+                                title={
+                                  showCurrentPassword
+                                    ? "Hide current password"
+                                    : "Show current password"
+                                }
+                                tabIndex={-1}
+                              >
+                                {showCurrentPassword ? (
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Eye className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
                           </div>
                           {passwordTouched.current && !currentPassword && (
                             <p className="text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium flex items-center gap-1.5 mt-1">
@@ -363,38 +452,76 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                             <label className="block text-xs font-semibold text-[#69594D] dark:text-[#CFC0B1]">
                               New Password
                             </label>
-                            {passwordTouched.new && newPassValidationError === null && (
-                              <span className="text-xs text-[#47705B] dark:text-[#82B99A] font-semibold flex items-center gap-1">
-                                <Check className="w-3.5 h-3.5" /> Strong password
-                              </span>
-                            )}
+                            {passwordTouched.new &&
+                              newPassValidationError === null && (
+                                <span className="text-xs text-[#47705B] dark:text-[#82B99A] font-semibold flex items-center gap-1">
+                                  <Check className="w-3.5 h-3.5" /> Strong
+                                  password
+                                </span>
+                              )}
                           </div>
                           <div className="relative">
                             <input
-                              type="password"
+                              type={showNewPassword ? "text" : "password"}
                               placeholder="••••••••"
                               value={newPassword}
-                              onBlur={() => setPasswordTouched((prev) => ({ ...prev, new: true }))}
+                              onBlur={() =>
+                                setPasswordTouched((prev) => ({
+                                  ...prev,
+                                  new: true,
+                                }))
+                              }
                               onChange={(e) => {
                                 setNewPassword(e.target.value);
                                 if (!passwordTouched.new) {
-                                  setPasswordTouched((prev) => ({ ...prev, new: true }));
+                                  setPasswordTouched((prev) => ({
+                                    ...prev,
+                                    new: true,
+                                  }));
                                 }
                               }}
-                              className={`w-full text-sm px-3 py-1.5 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
+                              className={`w-full text-sm px-3 py-1.5 pr-16 rounded-xl bg-[#FFFDF8] dark:bg-[#2A160B] focus:outline-none transition-all ${
                                 !passwordTouched.new
-                                  ? 'border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]'
+                                  ? "border border-[#DDD1C2] dark:border-[#5A3E30] focus:ring-2 focus:ring-[#5A301D] dark:focus:ring-[#C28A69]"
                                   : newPassValidationError === null
-                                  ? 'border-2 border-[#47705B] dark:border-[#82B99A]'
-                                  : 'border-2 border-[#9A4D3F] dark:border-[#D98678]'
+                                    ? "border-2 border-[#47705B] dark:border-[#82B99A]"
+                                    : "border-2 border-[#9A4D3F] dark:border-[#D98678]"
                               }`}
                             />
-                            {passwordTouched.new && newPassValidationError === null && (
-                              <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] absolute right-3 top-2 pointer-events-none" />
-                            )}
-                            {passwordTouched.new && newPassValidationError !== null && (
-                              <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] absolute right-3 top-2 pointer-events-none" />
-                            )}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10">
+                              {passwordTouched.new &&
+                                newPassValidationError === null && (
+                                  <Check className="w-4 h-4 text-[#47705B] dark:text-[#82B99A] pointer-events-none" />
+                                )}
+                              {passwordTouched.new &&
+                                newPassValidationError !== null && (
+                                  <AlertCircle className="w-4 h-4 text-[#9A4D3F] dark:text-[#D98678] pointer-events-none" />
+                                )}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowNewPassword((prev) => !prev)
+                                }
+                                className="p-1 rounded-lg text-[#69594D] dark:text-[#CFC0B1] hover:text-[#24150E] dark:hover:text-[#F8F4EB] transition cursor-pointer"
+                                aria-label={
+                                  showNewPassword
+                                    ? "Hide new password"
+                                    : "Show new password"
+                                }
+                                title={
+                                  showNewPassword
+                                    ? "Hide new password"
+                                    : "Show new password"
+                                }
+                                tabIndex={-1}
+                              >
+                                {showNewPassword ? (
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Eye className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
                           </div>
                           {passwordTouched.new && newPassValidationError && (
                             <p className="text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium flex items-center gap-1.5 mt-1">
@@ -404,13 +531,13 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                           )}
                         </div>
 
-                        {passwordError && passwordStatus === 'error' && (
+                        {passwordError && passwordStatus === "error" && (
                           <div className="flex items-center gap-1.5 text-sm text-[#9A4D3F] dark:text-[#D98678] font-medium p-2 rounded-xl bg-[#9A4D3F]/10 border border-[#9A4D3F]/20">
                             <AlertCircle className="w-4 h-4 shrink-0" />
                             <span>{passwordError}</span>
                           </div>
                         )}
-                        {passwordStatus === 'success' && (
+                        {passwordStatus === "success" && (
                           <div className="flex items-center gap-1.5 text-sm text-[#47705B] dark:text-[#82B99A] font-medium p-2 rounded-xl bg-[#47705B]/10 border border-[#47705B]/20">
                             <Check className="w-4 h-4 shrink-0" />
                             <span>Password updated successfully!</span>
@@ -418,10 +545,12 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                         )}
                         <button
                           type="submit"
-                          disabled={passwordStatus === 'saving'}
+                          disabled={passwordStatus === "saving"}
                           className="w-full py-2 bg-[#5A301D] hover:bg-[#472313] text-[#FFFDF8] dark:bg-[#C28A69] dark:hover:bg-[#D09A78] dark:text-[#1D0D00] rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer shadow-sm"
                         >
-                          {passwordStatus === 'saving' ? 'Updating...' : 'Update Password'}
+                          {passwordStatus === "saving"
+                            ? "Updating..."
+                            : "Update Password"}
                         </button>
                       </form>
                     )}
@@ -433,7 +562,7 @@ export const Navbar: React.FC<{ onOpenApiKeyModal: () => void }> = ({ onOpenApiK
                       onClick={() => {
                         setProfileOpen(false);
                         logout();
-                        navigate('/auth');
+                        navigate("/auth");
                       }}
                       className="w-full flex items-center gap-2 p-2.5 rounded-2xl text-sm font-semibold text-[#9A4D3F] dark:text-[#D98678] hover:bg-[#9A4D3F]/10 transition-colors cursor-pointer"
                     >

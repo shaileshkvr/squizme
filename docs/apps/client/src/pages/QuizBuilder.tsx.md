@@ -1,14 +1,14 @@
 # Documentation: @/apps/client/src/pages/QuizBuilder.tsx
 
 ### Purpose
-Provides the primary quiz generation interface powered by Groq (`openai/gpt-oss-120b`). Features a unified prompt and source material input container with an in-input `+` file attachment button (temporarily disabled pending Cloudinary privacy integration), calibrated depth/difficulty selectors, centered question count slider (min 5, max 50), dual evaluation mode selectors, and a prominently positioned Recommended Scope Policy banner.
+Provides the primary quiz generation interface powered by Groq (`openai/gpt-oss-120b`). Features a unified prompt and source material input container with an in-input `+` file attachment button (temporarily disabled pending Cloudinary privacy integration, with click/focus-outside and Escape key dismissal), calibrated depth/difficulty selectors, centered question count slider (min 5, max 50), dual evaluation mode selectors, and a prominently positioned Recommended Scope Policy banner.
 
 ### What happens without it
 Users cannot enter quiz topics or study notes, customize question framing, or trigger Groq assessment generation.
 
 ### Key Controls & Ergonomics
 - **Unified Input Area**: Consolidates topic prompt, source notes, and question instructions into a single flexible container.
-- **In-Input Attachment (`+` Icon)**: Shows disabled "Add file" option with informative notice regarding Cloudinary privacy pipeline status.
+- **In-Input Attachment (`+` Icon)**: Shows disabled "Add file" option with informative notice regarding Cloudinary privacy pipeline status. Dismisses automatically on outside click (`mousedown`), outside focus (`focusin`), or `Escape` key press.
 - **Centered Slider**: Centered layout with real-time question count badge, enforcing a minimum of 5 questions.
 - **Scope Policy Banner**: Positioned below the primary Generate Quiz button for enhanced readability.
 - **Evaluation Mode Selector**: Choice between immediate per-option feedback (Learning Mode) and timed submission (Exam Mode).

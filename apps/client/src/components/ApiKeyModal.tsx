@@ -1,49 +1,85 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { ExternalLink, CheckCircle, Key, X, AlertCircle, ShieldCheck } from 'lucide-react';
-import { saveLocalApiKey, removeLocalApiKey, hasLocalApiKey } from '../utils/crypto';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import {
+  ExternalLink,
+  CheckCircle,
+  Key,
+  X,
+  AlertCircle,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import {
+  saveLocalApiKey,
+  removeLocalApiKey,
+  hasLocalApiKey,
+} from "../utils/crypto";
 
-export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+export const ApiKeyModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+}> = ({ isOpen, onClose }) => {
   const { user, token, refreshProfile } = useAuth();
-  const [apiKey, setApiKey] = useState('');
-  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [apiKey, setApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">(
+    "idle",
+  );
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Close modal on Escape key press
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('saving');
-    setErrorMessage('');
+    setStatus("saving");
+    setErrorMessage("");
 
     try {
       const trimmed = apiKey.trim();
       if (trimmed.length < 10) {
-        throw new Error('Please enter a valid Groq API key (at least 10 characters).');
+        throw new Error(
+          "Please enter a valid Groq API key (at least 10 characters).",
+        );
       }
 
       // Save encrypted locally on the user's device
       await saveLocalApiKey(trimmed);
 
-      setStatus('success');
+      setStatus("success");
       await refreshProfile();
       setTimeout(() => {
-        setStatus('idle');
+        setStatus("idle");
         onClose();
       }, 1200);
     } catch (err: any) {
-      setStatus('error');
+      setStatus("error");
       setErrorMessage(err.message);
     }
   };
 
   const handleRemove = async () => {
-    if (!confirm('Remove your custom API key from this device? You will revert to host quota.')) return;
+    if (
+      !confirm(
+        "Remove your custom API key from this device? You will revert to host quota.",
+      )
+    )
+      return;
     removeLocalApiKey();
     if (token) {
-      await fetch('/api/users/api-key', {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+      await fetch("/api/users/api-key", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       }).catch(() => {});
     }
     await refreshProfile();
@@ -70,18 +106,20 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
             <Key className="w-6 h-6 text-brand-ai" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-brand-text">Groq Cloud API Key</h2>
-            <span className="text-xs text-brand-muted">Bring Your Own Key (BYOK) Configuration</span>
+            <h2 className="text-xl font-bold text-brand-text">
+              Groq Cloud API Key
+            </h2>
+            <span className="text-xs text-brand-muted">
+              Bring Your Own Key (BYOK) Configuration
+            </span>
           </div>
         </div>
 
-        <p className="text-sm text-brand-secondary mb-5 leading-relaxed">
-          Groq provides fast, deterministic inference for <code className="text-xs px-1.5 py-0.5 rounded bg-brand-elevated border border-brand-border">openai/gpt-oss-120b</code>. Connect your personal key to unlock unlimited quizzes with up to 50 questions each.
-        </p>
-
         {/* 4-Step Walkthrough */}
         <div className="bg-brand-elevated/70 border border-brand-border rounded-2xl p-4 mb-5 space-y-2.5">
-          <h3 className="text-xs font-bold text-brand-muted uppercase tracking-wider">How to get and configure your Groq key</h3>
+          <h3 className="text-xs font-bold text-brand-muted uppercase tracking-wider">
+            How to get and configure your Groq key
+          </h3>
           <ol className="text-sm text-brand-secondary space-y-2 list-decimal list-inside leading-relaxed">
             <li>
               <a
@@ -91,12 +129,21 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 className="text-brand-ai hover:underline font-semibold inline-flex items-center gap-1"
               >
                 Sign in to Groq Cloud <ExternalLink className="w-3.5 h-3.5" />
-              </a>{' '}
+              </a>{" "}
               or create a new free account.
             </li>
-            <li>Go to <strong>API Keys</strong> in the sidebar and click <strong>"Create API Key"</strong>.</li>
-            <li>Go to <strong>Projects</strong>, select your active project, and verify it is allowed to accept requests via API.</li>
-            <li>Copy your generated key (starts with <code className="text-xs">gsk_</code>) and paste it below.</li>
+            <li>
+              Go to <strong>API Keys</strong> in the sidebar and click{" "}
+              <strong>"Create API Key"</strong>.
+            </li>
+            <li>
+              Go to <strong>Projects</strong>, select your active project, and
+              verify it is allowed to accept requests via API.
+            </li>
+            <li>
+              Copy your generated key (starts with{" "}
+              <code className="text-xs">gsk_</code>) and paste it below.
+            </li>
           </ol>
         </div>
 
@@ -104,34 +151,56 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
         <div className="bg-brand-card border border-brand-border rounded-2xl p-4 mb-5 text-sm text-brand-secondary flex gap-3">
           <ShieldCheck className="w-5 h-5 text-brand-success shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <strong className="font-semibold block text-brand-text">Local-Only Encrypted Storage</strong>
+            <strong className="font-semibold block text-brand-text">
+              Local-Only Encrypted Storage
+            </strong>
             <p className="text-xs sm:text-sm text-brand-secondary leading-relaxed">
-              Your API key is never stored in plain text or saved to our databases. It is encrypted in your browser using AES-256-GCM. We collect zero tracking data on your queries.
+              Your API key is never stored in plain text or saved to our
+              databases. It is encrypted in your browser using AES-256-GCM. We
+              collect zero tracking data on your queries.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-brand-text mb-1.5">Paste Groq API Key</label>
-            <input
-              type="password"
-              placeholder="gsk_..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              required
-              className="w-full text-sm px-3.5 py-2.5 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
-            />
+            <label className="block text-sm font-semibold text-brand-text mb-1.5">
+              Paste Groq API Key
+            </label>
+            <div className="relative">
+              <input
+                type={showApiKey ? "text" : "password"}
+                placeholder="gsk_..."
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                required
+                className="w-full text-sm px-3.5 py-2.5 pr-11 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey((prev) => !prev)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-brand-secondary hover:text-brand-text transition cursor-pointer"
+                aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                title={showApiKey ? "Hide API key" : "Show API key"}
+                tabIndex={-1}
+              >
+                {showApiKey ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
-          {status === 'error' && (
+          {status === "error" && (
             <div className="flex items-center gap-2 text-sm text-brand-error bg-brand-error/10 p-3 rounded-2xl border border-brand-error/30">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {status === 'success' && (
+          {status === "success" && (
             <div className="flex items-center gap-2 text-sm text-brand-success bg-brand-success/10 p-3 rounded-2xl border border-brand-success/30">
               <CheckCircle className="w-4 h-4 shrink-0" />
               <span>API key encrypted and saved locally on your device!</span>
@@ -149,29 +218,22 @@ export const ApiKeyModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
               <span>Manage keys in Groq Console</span>
             </a>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
               {(user?.hasCustomKey || hasLocalApiKey()) && (
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="text-sm text-brand-error hover:underline px-3 py-2 cursor-pointer transition"
+                  className="text-sm text-brand-error hover:underline px-2 py-1.5 cursor-pointer transition"
                 >
                   Remove Key
                 </button>
               )}
               <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-brand-border rounded-full hover:bg-brand-elevated text-brand-secondary transition text-sm cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
                 type="submit"
-                disabled={status === 'saving'}
-                className="px-5 py-2 bg-brand-primary hover:bg-brand-hover text-brand-primary-text font-semibold rounded-full transition shadow-sm hover:shadow active:scale-95 text-sm cursor-pointer disabled:opacity-50"
+                disabled={status === "saving"}
+                className="px-5 py-2 bg-brand-primary hover:bg-brand-hover text-brand-primary-text font-semibold rounded-full transition shadow-sm hover:shadow active:scale-95 text-sm cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
-                {status === 'saving' ? 'Encrypting...' : 'Save Encrypted Key'}
+                {status === "saving" ? "Saving..." : "Save Key"}
               </button>
             </div>
           </div>

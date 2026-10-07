@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Send, BookOpen, Clock } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  ArrowLeft,
+  Send,
+  BookOpen,
+  Clock,
+} from "lucide-react";
 
 export const QuizPlayerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +20,9 @@ export const QuizPlayerPage: React.FC = () => {
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [checkedQuestions, setCheckedQuestions] = useState<Record<string, boolean>>({});
+  const [checkedQuestions, setCheckedQuestions] = useState<
+    Record<string, boolean>
+  >({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -20,14 +30,14 @@ export const QuizPlayerPage: React.FC = () => {
     async function initQuiz() {
       try {
         const quizRes = await fetch(`/api/quizzes/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const quizData = await quizRes.json();
         setQuiz(quizData);
 
         const attemptRes = await fetch(`/api/attempts/start/${id}`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
         });
         const attemptData = await attemptRes.json();
         setAttemptId(attemptData.attemptId);
@@ -49,15 +59,17 @@ export const QuizPlayerPage: React.FC = () => {
   }
 
   const currentQ = quiz.questions[currentIndex];
-  const isLearningMode = quiz.settings?.mode === 'learning';
+  const isLearningMode = quiz.settings?.mode === "learning";
   const currentAnswer = answers[currentQ.id];
   const isChecked = checkedQuestions[currentQ.id];
 
   const handleSelectOption = (optId: string) => {
     if (isChecked && isLearningMode) return;
-    if (currentQ.type === 'multiple_choice') {
+    if (currentQ.type === "multiple_choice") {
       const existing = (currentAnswer as string[]) || [];
-      const updated = existing.includes(optId) ? existing.filter((x) => x !== optId) : [...existing, optId];
+      const updated = existing.includes(optId)
+        ? existing.filter((x) => x !== optId)
+        : [...existing, optId];
       setAnswers({ ...answers, [currentQ.id]: updated });
     } else {
       setAnswers({ ...answers, [currentQ.id]: optId });
@@ -71,19 +83,21 @@ export const QuizPlayerPage: React.FC = () => {
   const handleSubmitQuiz = async () => {
     if (!attemptId) return;
     setSubmitting(true);
-    const formattedAnswers = Object.entries(answers).map(([questionId, submittedAnswer]) => ({
-      questionId,
-      submittedAnswer
-    }));
+    const formattedAnswers = Object.entries(answers).map(
+      ([questionId, submittedAnswer]) => ({
+        questionId,
+        submittedAnswer,
+      }),
+    );
 
     try {
       await fetch(`/api/attempts/${attemptId}/submit`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ answers: formattedAnswers })
+        body: JSON.stringify({ answers: formattedAnswers }),
       });
       navigate(`/attempts/${attemptId}`);
     } catch (err) {
@@ -93,24 +107,32 @@ export const QuizPlayerPage: React.FC = () => {
     }
   };
 
-  const isCorrect = isChecked && (
-    currentQ.type === 'multiple_choice'
-      ? (currentQ.correctAnswers as string[]).every((a: string) => (currentAnswer as string[])?.includes(a))
-      : (currentQ.correctAnswers as string[])[0] === currentAnswer
-  );
+  const isCorrect =
+    isChecked &&
+    (currentQ.type === "multiple_choice"
+      ? (currentQ.correctAnswers as string[]).every((a: string) =>
+          (currentAnswer as string[])?.includes(a),
+        )
+      : (currentQ.correctAnswers as string[])[0] === currentAnswer);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Quiz Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-brand-card p-4 sm:p-5 rounded-3xl border border-brand-border shadow-sm transition-colors">
         <div>
-          <h2 className="font-bold text-base sm:text-lg text-brand-text line-clamp-1">{quiz.title}</h2>
+          <h2 className="font-bold text-base sm:text-lg text-brand-text line-clamp-1">
+            {quiz.title}
+          </h2>
           <span className="text-sm text-brand-muted">
             Question {currentIndex + 1} of {quiz.questions.length}
           </span>
         </div>
         <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-xs sm:text-sm px-3.5 py-1 rounded-full bg-brand-elevated font-semibold text-brand-text border border-brand-border capitalize">
-          {isLearningMode ? <BookOpen className="w-3.5 h-3.5 text-brand-ai" /> : <Clock className="w-3.5 h-3.5 text-brand-warning" />}
+          {isLearningMode ? (
+            <BookOpen className="w-3.5 h-3.5 text-brand-ai" />
+          ) : (
+            <Clock className="w-3.5 h-3.5 text-brand-warning" />
+          )}
           {quiz.settings?.mode} Mode
         </span>
       </div>
@@ -122,14 +144,16 @@ export const QuizPlayerPage: React.FC = () => {
         </h3>
 
         {/* Dynamic Question Option Interface */}
-        {currentQ.type === 'short_answer' ? (
+        {currentQ.type === "short_answer" ? (
           <div>
             <input
               type="text"
               placeholder="Type your answer here..."
-              value={(currentAnswer as string) || ''}
+              value={(currentAnswer as string) || ""}
               disabled={isChecked && isLearningMode}
-              onChange={(e) => setAnswers({ ...answers, [currentQ.id]: e.target.value })}
+              onChange={(e) =>
+                setAnswers({ ...answers, [currentQ.id]: e.target.value })
+              }
               className="w-full text-sm sm:text-base px-4 py-3 border border-brand-border bg-brand-card text-brand-text rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-ai transition"
             />
           </div>
@@ -146,8 +170,8 @@ export const QuizPlayerPage: React.FC = () => {
                   onClick={() => handleSelectOption(opt.id)}
                   className={`w-full text-left p-4 rounded-2xl border text-sm sm:text-base transition-all duration-150 flex items-center justify-between cursor-pointer min-h-[52px] active:scale-[0.99] ${
                     isSelected
-                      ? 'border-brand-primary bg-brand-elevated text-brand-text font-semibold shadow-sm'
-                      : 'border-brand-border hover:border-brand-border-strong text-brand-secondary hover:bg-brand-elevated/40 bg-brand-card'
+                      ? "border-brand-primary bg-brand-elevated text-brand-text font-semibold shadow-sm"
+                      : "border-brand-border hover:border-brand-border-strong text-brand-secondary hover:bg-brand-elevated/40 bg-brand-card"
                   }`}
                 >
                   <span className="leading-relaxed">{opt.text}</span>
@@ -166,7 +190,10 @@ export const QuizPlayerPage: React.FC = () => {
             {!isChecked ? (
               <button
                 onClick={handleCheckAnswer}
-                disabled={!currentAnswer || (Array.isArray(currentAnswer) && currentAnswer.length === 0)}
+                disabled={
+                  !currentAnswer ||
+                  (Array.isArray(currentAnswer) && currentAnswer.length === 0)
+                }
                 className="bg-brand-primary hover:bg-brand-hover text-brand-primary-text text-sm font-semibold px-6 py-2.5 rounded-full transition-all active:scale-95 disabled:opacity-40 cursor-pointer shadow-sm"
               >
                 Check Answer
@@ -175,8 +202,8 @@ export const QuizPlayerPage: React.FC = () => {
               <div
                 className={`p-4 sm:p-5 rounded-2xl text-sm space-y-2 border ${
                   isCorrect
-                    ? 'bg-brand-card text-brand-text border-brand-success/40'
-                    : 'bg-brand-card text-brand-text border-brand-error/40'
+                    ? "bg-brand-card text-brand-text border-brand-success/40"
+                    : "bg-brand-card text-brand-text border-brand-error/40"
                 }`}
               >
                 <div className="flex items-center gap-2 font-bold text-base">
@@ -185,9 +212,11 @@ export const QuizPlayerPage: React.FC = () => {
                   ) : (
                     <XCircle className="w-5 h-5 text-brand-error" />
                   )}
-                  <span>{isCorrect ? 'Correct!' : 'Incorrect'}</span>
+                  <span>{isCorrect ? "Correct!" : "Incorrect"}</span>
                 </div>
-                <p className="leading-relaxed text-brand-secondary">{currentQ.explanation}</p>
+                <p className="leading-relaxed text-brand-secondary">
+                  {currentQ.explanation}
+                </p>
               </div>
             )}
           </div>
@@ -219,7 +248,7 @@ export const QuizPlayerPage: React.FC = () => {
             className="flex items-center gap-1.5 text-sm sm:text-base font-semibold bg-brand-success hover:opacity-90 text-white px-7 py-2.5 rounded-full transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
-            <span>{submitting ? 'Submitting...' : 'Submit Quiz'}</span>
+            <span>{submitting ? "Submitting..." : "Submit Quiz"}</span>
           </button>
         )}
       </div>

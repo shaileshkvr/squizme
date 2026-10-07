@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Play, PlusCircle, Sparkles, BookOpen, Clock, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  Play,
+  PlusCircle,
+  Sparkles,
+  BookOpen,
+  Clock,
+  Calendar,
+} from "lucide-react";
 
 export const DashboardPage: React.FC = () => {
   const { token } = useAuth();
@@ -11,8 +18,8 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     async function loadQuizzes() {
       try {
-        const res = await fetch('/api/quizzes', {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch("/api/quizzes", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setQuizzes(data);
@@ -30,7 +37,9 @@ export const DashboardPage: React.FC = () => {
       {/* Hero Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">Your Quizzes</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight">
+            Your Quizzes
+          </h1>
           <p className="text-sm sm:text-base text-brand-secondary mt-1">
             Author, manage, and retake AI-synthesized quizzes anytime.
           </p>
@@ -53,9 +62,12 @@ export const DashboardPage: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-brand-elevated border border-brand-border flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-7 h-7 text-brand-ai" />
           </div>
-          <h3 className="font-bold text-lg sm:text-xl text-brand-text mb-2">No quizzes generated yet</h3>
+          <h3 className="font-bold text-lg sm:text-xl text-brand-text mb-2">
+            No quizzes generated yet
+          </h3>
           <p className="text-sm sm:text-base text-brand-secondary max-w-md mx-auto mb-6">
-            Upload a lecture document (PDF/DOCX) or enter any concept prompt to synthesize your first quiz.
+            Upload a lecture document (PDF/DOCX) or enter any concept prompt to
+            synthesize your first quiz.
           </p>
           <Link
             to="/quizzes/new"
@@ -92,12 +104,12 @@ export const DashboardPage: React.FC = () => {
 
               <div className="pt-4 border-t border-brand-border flex items-center justify-between">
                 <span className="text-sm text-brand-secondary flex items-center gap-1.5 capitalize font-medium">
-                  {quiz.settings?.mode === 'exam' ? (
+                  {quiz.settings?.mode === "exam" ? (
                     <Clock className="w-4 h-4 text-brand-warning" />
                   ) : (
                     <BookOpen className="w-4 h-4 text-brand-ai" />
                   )}
-                  {quiz.settings?.mode || 'learning'}
+                  {quiz.settings?.mode || "learning"}
                 </span>
                 <Link
                   to={`/quizzes/${quiz.id}/play`}

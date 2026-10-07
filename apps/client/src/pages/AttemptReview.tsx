@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { CheckCircle, XCircle, Award, RotateCcw, Home } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { CheckCircle, XCircle, Award, RotateCcw, Home } from "lucide-react";
 
 export const AttemptReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +13,7 @@ export const AttemptReviewPage: React.FC = () => {
     async function loadScorecard() {
       try {
         const res = await fetch(`/api/attempts/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const resData = await res.json();
         setData(resData);
@@ -54,8 +54,11 @@ export const AttemptReviewPage: React.FC = () => {
         </div>
 
         <p className="text-sm sm:text-base text-brand-secondary">
-          You scored <strong className="text-brand-text">{attempt.scoreAwarded}</strong> out of{' '}
-          <strong className="text-brand-text">{attempt.totalPoints}</strong> points.
+          You scored{" "}
+          <strong className="text-brand-text">{attempt.scoreAwarded}</strong>{" "}
+          out of{" "}
+          <strong className="text-brand-text">{attempt.totalPoints}</strong>{" "}
+          points.
         </p>
 
         <div className="pt-3 flex flex-wrap justify-center gap-3">
@@ -78,7 +81,9 @@ export const AttemptReviewPage: React.FC = () => {
 
       {/* Question Breakdown */}
       <div className="space-y-4">
-        <h2 className="text-lg sm:text-xl font-bold text-brand-text">Detailed Question Breakdown</h2>
+        <h2 className="text-lg sm:text-xl font-bold text-brand-text">
+          Detailed Question Breakdown
+        </h2>
         {items.map((item: any, idx: number) => (
           <div
             key={item.id}
@@ -90,7 +95,8 @@ export const AttemptReviewPage: React.FC = () => {
               </span>
               {item.isCorrect ? (
                 <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-success bg-brand-success/10 px-3 py-1 rounded-full border border-brand-success/30">
-                  <CheckCircle className="w-4 h-4" /> Correct (+{item.pointsEarned} pts)
+                  <CheckCircle className="w-4 h-4" /> Correct (+
+                  {item.pointsEarned} pts)
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-error bg-brand-error/10 px-3 py-1 rounded-full border border-brand-error/30">
@@ -100,14 +106,17 @@ export const AttemptReviewPage: React.FC = () => {
             </div>
 
             <div className="text-sm text-brand-text bg-brand-elevated/70 p-3.5 rounded-2xl border border-brand-border">
-              <strong className="block text-brand-text mb-1">Submitted Answer:</strong>
+              <strong className="block text-brand-text mb-1">
+                Submitted Answer:
+              </strong>
               {Array.isArray(item.submittedAnswer)
-                ? item.submittedAnswer.join(', ')
-                : item.submittedAnswer || '(Blank)'}
+                ? item.submittedAnswer.join(", ")
+                : item.submittedAnswer || "(Blank)"}
             </div>
 
             <p className="text-sm text-brand-secondary leading-relaxed">
-              <strong className="text-brand-text">Explanation:</strong> {item.gradedFeedback}
+              <strong className="text-brand-text">Explanation:</strong>{" "}
+              {item.gradedFeedback}
             </p>
           </div>
         ))}

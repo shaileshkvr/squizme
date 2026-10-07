@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 type AuthMode = "login" | "register" | "forgot" | "otp";
@@ -26,6 +28,7 @@ export const AuthPage: React.FC = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
@@ -149,7 +152,10 @@ export const AuthPage: React.FC = () => {
     return `${base} border border-brand-border focus:ring-2 focus:ring-brand-ai focus:border-brand-ai`;
   };
 
-  const getLabelClass = (hasValue: boolean, status: "neutral" | "valid" | "invalid") => {
+  const getLabelClass = (
+    hasValue: boolean,
+    status: "neutral" | "valid" | "invalid",
+  ) => {
     const base =
       "absolute left-3.5 px-1.5 bg-brand-card pointer-events-none transition-all duration-200 origin-left select-none z-10";
 
@@ -316,7 +322,10 @@ export const AuthPage: React.FC = () => {
                   />
                   <label
                     htmlFor="firstName"
-                    className={getLabelClass(Boolean(firstName), getFirstNameStatus())}
+                    className={getLabelClass(
+                      Boolean(firstName),
+                      getFirstNameStatus(),
+                    )}
                   >
                     First Name
                   </label>
@@ -352,9 +361,15 @@ export const AuthPage: React.FC = () => {
                   />
                   <label
                     htmlFor="lastName"
-                    className={getLabelClass(Boolean(lastName), getLastNameStatus())}
+                    className={getLabelClass(
+                      Boolean(lastName),
+                      getLastNameStatus(),
+                    )}
                   >
-                    Last Name <span className="text-xs text-brand-secondary font-normal">(Optional)</span>
+                    Last Name{" "}
+                    <span className="text-xs text-brand-secondary font-normal">
+                      (Optional)
+                    </span>
                   </label>
                   {getLastNameStatus() === "valid" && (
                     <Check className="w-4 h-4 text-brand-success absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
@@ -417,7 +432,7 @@ export const AuthPage: React.FC = () => {
             <div className="relative">
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder=" "
                 value={password}
                 onBlur={() => markTouched("password")}
@@ -426,20 +441,39 @@ export const AuthPage: React.FC = () => {
                   setLoginFailed(false);
                   if (!touched.password) markTouched("password");
                 }}
-                className={getInputClass(getPasswordStatus())}
+                className={`${getInputClass(getPasswordStatus())} pr-16`}
               />
               <label
                 htmlFor="password"
-                className={getLabelClass(Boolean(password), getPasswordStatus())}
+                className={getLabelClass(
+                  Boolean(password),
+                  getPasswordStatus(),
+                )}
               >
                 Password
               </label>
-              {getPasswordStatus() === "valid" && (
-                <Check className="w-4 h-4 text-brand-success absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
-              )}
-              {getPasswordStatus() === "invalid" && (
-                <AlertCircle className="w-4 h-4 text-brand-error absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
-              )}
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10">
+                {getPasswordStatus() === "valid" && (
+                  <Check className="w-4 h-4 text-brand-success pointer-events-none" />
+                )}
+                {getPasswordStatus() === "invalid" && (
+                  <AlertCircle className="w-4 h-4 text-brand-error pointer-events-none" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="p-1 rounded-lg text-brand-secondary hover:text-brand-text transition cursor-pointer"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
             {mode === "login" && (
               <div className="flex justify-end mt-1.5">
