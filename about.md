@@ -36,11 +36,11 @@ Squizme is an AI-powered quiz generation platform built as a TypeScript modular 
 - **Important Files**: [`apps/server/src/modules/documents/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/documents/service.ts).
 - **Caveats**: Scanned image PDFs without selectable text layers cannot be extracted without an OCR preprocessing pipeline.
 
-### 6. Gemini Generation Engine
-- **Purpose**: Generates high-quality structured quizzes based on prompt or document context.
-- **Implementation**: Connects via `@google/genai` to Gemini 3.8 Flash (configurable via `GEMINI_MODEL`) using tool calls (`add_single_choice_question`, `add_multiple_choice_question`, `add_true_false_question`, `add_short_answer_question`). It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key (passed directly from local device storage in volatile memory).
-- **Important Files**: [`apps/server/src/modules/generator/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/service.ts), [`apps/server/src/modules/generator/tools.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/tools.ts).
-- **Caveats**: Free host tier is capped at 2 generations per account. When exhausted, the server returns HTTP 403 `QUOTA_EXHAUSTED`. External model logging by Google is independent of Squizme.
+### 6. Groq Generation Engine & Structured Output Validation
+- **Purpose**: Generates high-quality structured quizzes based on prompt context using Groq (`openai/gpt-oss-120b`), backed by strict JSON Schema output formatting and semantic post-validation.
+- **Implementation**: Connects via direct HTTP `fetch` to Groq's completions endpoint using native strict JSON schema (`GROQ_QUIZ_JSON_SCHEMA`). Enforces semantic validation via `validateQuizSemantics` (single choice 4 options, true/false 2 options, exactly one correct option, distinct option labels, and substantive per-option explanations). Automatically runs a bounded repair loop (up to 2 retries) if provisional output violates schema or semantic rules. Document uploads are temporarily blocked (`DOCUMENT_UPLOADS_DISABLED`) until Cloudinary privacy pipeline integration is complete. It enforces the 2-free-quiz quota (10 questions cap) for host-funded keys and allows up to 50 questions for users who bring their own key.
+- **Important Files**: [`apps/server/src/modules/generator/service.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/service.ts), [`apps/server/src/modules/generator/groq.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/groq.ts), [`apps/server/src/modules/generator/validator.ts`](file:///home/shailesh/Projects/squizme/apps/server/src/modules/generator/validator.ts).
+- **Caveats**: Free host tier is capped at 2 generations per account. When exhausted, the server returns HTTP 403 `QUOTA_EXHAUSTED`. PDF uploads currently return HTTP 400 `DOCUMENT_UPLOADS_DISABLED` pending Cloudinary privacy setup.
 
 ### 7. Quiz Runner & Auto-Grading Engine
 - **Purpose**: Evaluates student responses across question formats and computes scorecard statistics.
