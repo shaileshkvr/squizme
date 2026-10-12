@@ -6,7 +6,6 @@ dist
 !.env.example
 *.log
 coverage
+*.tsbuildinfo
 .DS_Store
-antigravity/
-CHAT.md
 antigravity/

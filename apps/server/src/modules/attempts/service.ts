@@ -1,112 +1,96 @@
-import crypto from 'node:crypto';
-import { eq } from 'drizzle-orm';
-import { db } from '../../db/index.js';
-import { quizAttempts, attemptAnswers, questions, quizzes } from '../../db/schema.js';
-import { SubmitAnswer } from '@squizme/shared';
+import type {
+  AttemptResult,
+  AttemptResultDetail,
+  SubmitAttemptInput,
+} from "@squizme/shared";
+import { pool } from "../../db/index.js";
+import { getQuizById } from "../quizzes/service.js";
 
-export function gradeQuestionAnswer(
-  type: string,
-  correctAnswers: string[],
-  submitted: string | string[],
-  points: number
-): { isCorrect: boolean; pointsEarned: number } {
-  if (type === 'single_choice' || type === 'true_false') {
-    const isCorrect = Array.isArray(submitted) ? submitted[0] === correctAnswers[0] : submitted === correctAnswers[0];
-    return { isCorrect, pointsEarned: isCorrect ? points : 0 };
-  }
+export async function submitAttempt(
+  input: SubmitAttemptInput
+): Promise<AttemptResult | null> {
+  const quiz = await getQuizById(input.quizId);
+  if (!quiz) return null;
 
-  if (type === 'multiple_choice') {
-    const submittedArray = Array.isArray(submitted) ? submitted : [submitted];
-    const isCorrect = correctAnswers.length === submittedArray.length &&
-      correctAnswers.every((ans) => submittedArray.includes(ans));
-    return { isCorrect, pointsEarned: isCorrect ? points : 0 };
-  }
+  const answerMap = new Map(
+    input.answers.map((a) => [a.questionId, a.selectedOptionId])
+  );
 
-  if (type === 'short_answer') {
-    const text = (Array.isArray(submitted) ? submitted[0] : submitted || '').trim().toLowerCase();
-    const isCorrect = correctAnswers.some((ans) => ans.trim().toLowerCase() === text);
-    return { isCorrect, pointsEarned: isCorrect ? points : 0 };
-  }
+  let score = 0;
+  const details: AttemptResultDetail[] = [];
 
-  return { isCorrect: false, pointsEarned: 0 };
-}
+  for (const q of quiz.questions) {
+    const selectedOptionId = answerMap.get(q.id) ?? "";
+    const correctOption = q.options.find((opt) => opt.isCorrect);
+    const correctOptionId = correctOption?.id ?? "";
+    const isCorrect = selectedOptionId !== "" && selectedOptionId === correctOptionId;
 
-export async function startQuizAttempt(userId: string, quizId: string) {
-  const attemptId = crypto.randomUUID();
-  const startedAt = new Date();
-  await db.insert(quizAttempts).values({
-    id: attemptId,
-    quizId,
-    userId,
-    startedAt,
-    status: 'in_progress'
-  });
-  return { attemptId, quizId, startedAt };
-}
-
-export async function submitQuizAttempt(attemptId: string, answers: SubmitAnswer[]) {
-  const attemptRecords = await db.select().from(quizAttempts).where(eq(quizAttempts.id, attemptId)).limit(1);
-  if (attemptRecords.length === 0) {
-    throw new Error('Attempt not found');
-  }
-  const attempt = attemptRecords[0];
-
-  const quizRecords = await db.select().from(quizzes).where(eq(quizzes.id, attempt.quizId)).limit(1);
-  const passingPercentage = (quizRecords[0]?.settings as any)?.passingPercentage ?? 70;
-
-  const quizQuestions = await db.select().from(questions).where(eq(questions.quizId, attempt.quizId));
-
-  let totalPossible = 0;
-  let totalScore = 0;
-
-  await db.transaction(async (tx) => {
-    for (const q of quizQuestions) {
-      totalPossible += q.points;
-      const userSubmission = answers.find((a) => a.questionId === q.id);
-      const submitted = userSubmission ? userSubmission.submittedAnswer : '';
-
-      const { isCorrect, pointsEarned } = gradeQuestionAnswer(
-        q.type,
-        q.correctAnswers as string[],
-        submitted,
-        q.points
-      );
-
-      totalScore += pointsEarned;
-
-      await tx.insert(attemptAnswers).values({
-        id: crypto.randomUUID(),
-        attemptId,
-        questionId: q.id,
-        submittedAnswer: submitted,
-        isCorrect,
-        pointsEarned: pointsEarned.toString(),
-        gradedFeedback: q.explanation
-      });
+    if (isCorrect) {
+      score += 1;
     }
 
-    const percentage = totalPossible > 0 ? (totalScore / totalPossible) * 100 : 0;
-    const isPassed = percentage >= passingPercentage;
+    details.push({
+      questionId: q.id,
+      selectedOptionId,
+      correctOptionId,
+      isCorrect,
+      explanation: q.explanation,
+    });
+  }
 
-    await tx.update(quizAttempts).set({
-      completedAt: new Date(),
-      status: 'completed',
-      scoreAwarded: totalScore.toString(),
-      totalPoints: totalPossible.toString(),
-      percentage: percentage.toFixed(2),
-      isPassed
-    }).where(eq(quizAttempts.id, attemptId));
-  });
+  const totalQuestions = quiz.questions.length;
+  const percentage = Number(
+    ((score / (totalQuestions || 1)) * 100).toFixed(2)
+  );
 
-  return getAttemptScorecard(attemptId);
+  const query = `
+    INSERT INTO attempts (quiz_id, participant_name, score, total_questions, percentage, details)
+    VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+    RETURNING id, quiz_id, participant_name, score, total_questions, percentage, details, completed_at;
+  `;
+
+  const values = [
+    input.quizId,
+    input.participantName || null,
+    score,
+    totalQuestions,
+    percentage,
+    JSON.stringify(details),
+  ];
+
+  const result = await pool.query(query, values);
+  const row = result.rows[0];
+
+  return {
+    id: row.id,
+    quizId: row.quiz_id,
+    participantName: row.participant_name || undefined,
+    score: row.score,
+    totalQuestions: row.total_questions,
+    percentage: Number(row.percentage),
+    details: row.details,
+    completedAt: row.completed_at.toISOString(),
+  };
 }
 
-export async function getAttemptScorecard(attemptId: string) {
-  const attempts = await db.select().from(quizAttempts).where(eq(quizAttempts.id, attemptId)).limit(1);
-  if (attempts.length === 0) {
-    throw new Error('Attempt not found');
-  }
-  const attempt = attempts[0];
-  const items = await db.select().from(attemptAnswers).where(eq(attemptAnswers.attemptId, attemptId));
-  return { attempt, items };
+export async function getAttemptById(id: string): Promise<AttemptResult | null> {
+  const query = `
+    SELECT id, quiz_id, participant_name, score, total_questions, percentage, details, completed_at
+    FROM attempts
+    WHERE id = $1;
+  `;
+  const result = await pool.query(query, [id]);
+  if (result.rows.length === 0) return null;
+
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    quizId: row.quiz_id,
+    participantName: row.participant_name || undefined,
+    score: row.score,
+    totalQuestions: row.total_questions,
+    percentage: Number(row.percentage),
+    details: row.details,
+    completedAt: row.completed_at.toISOString(),
+  };
 }

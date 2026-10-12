@@ -2,14 +2,17 @@
   "name": "squizme-monorepo",
   "private": true,
   "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
     "dev:server": "pnpm --filter @squizme/server dev",
     "dev:client": "pnpm --filter @squizme/client dev",
-    "dev": "pnpm --parallel --filter @squizme/server --filter @squizme/client dev",
-    "dev:all": "docker stop squizme-app 2>/dev/null || true && docker compose up -d postgres && pnpm dev",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"blue.bold,green.bold\" \"pnpm dev:server\" \"pnpm dev:client\"",
+    "dev:all": "docker compose up -d postgres && concurrently -k -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"blue.bold,green.bold\" \"pnpm dev:server\" \"pnpm dev:client\"",
     "build": "pnpm --recursive run build",
-    "test": "pnpm --recursive run test"
+    "typecheck": "pnpm --recursive run typecheck"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "typescript": "^5.8.2"
   }
 }

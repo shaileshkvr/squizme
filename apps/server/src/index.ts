@@ -1,74 +1,49 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import multipart from '@fastify/multipart';
-import fastifyStatic from '@fastify/static';
-import dotenv from 'dotenv';
-import path from 'node:path';
-import fs from 'node:fs';
-import authPlugin from './plugins/auth.js';
-import { authRoutes } from './modules/auth/routes.js';
-import { userRoutes } from './modules/users/routes.js';
-import { generatorRoutes } from './modules/generator/routes.js';
-import { quizRoutes } from './modules/quizzes/routes.js';
-import { attemptRoutes } from './modules/attempts/routes.js';
-import { bootstrapDatabase } from './db/bootstrap.js';
+import { buildApp } from "./app.js";
+import { env } from "./config/env.js";
+import { closeDb } from "./db/index.js";
+import { bootstrapDatabase } from "./db/schema.js";
 
-dotenv.config();
+async function startServer() {
+  const app = await buildApp();
 
-const port = Number(process.env.PORT) || 3001;
-const server = Fastify({
-  logger: true
-});
+  // Initialize Database Schema
+  try {
+    app.log.info("Connecting to PostgreSQL and verifying schema...");
+    await bootstrapDatabase();
+    app.log.info("Database schema initialized successfully.");
+  } catch (error) {
+    app.log.warn(
+      { error },
+      "Database connection/bootstrap failed on startup. Will continue starting server (endpoints will retry DB on demand)."
+    );
+  }
 
-async function main() {
-  await bootstrapDatabase();
-
-  await server.register(cors, {
-    origin: true,
-    credentials: true
-  });
-
-  await server.register(multipart, {
-    limits: {
-      fileSize: 20 * 1024 * 1024, // 20MB
-      files: 1
-    }
-  });
-
-  await server.register(authPlugin);
-
-  // Healthcheck
-  server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
-
-  // Register domain module routes
-  await server.register(authRoutes, { prefix: '/api/auth' });
-  await server.register(userRoutes, { prefix: '/api/users' });
-  await server.register(generatorRoutes, { prefix: '/api/generator' });
-  await server.register(quizRoutes, { prefix: '/api/quizzes' });
-  await server.register(attemptRoutes, { prefix: '/api/attempts' });
-
-  // Serve static assets in production if public directory exists
-  const publicPath = path.join(process.cwd(), 'apps/server/public');
-  if (fs.existsSync(publicPath)) {
-    await server.register(fastifyStatic, {
-      root: publicPath,
-      wildcard: false
-    });
-    server.setNotFoundHandler((req, reply) => {
-      if (!req.raw.url?.startsWith('/api')) {
-        return reply.sendFile('index.html');
+  // Graceful Shutdown
+  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
+  for (const signal of signals) {
+    process.on(signal, async () => {
+      app.log.info(`Received ${signal}. Shutting down gracefully...`);
+      try {
+        await app.close();
+        await closeDb();
+        app.log.info("Server and database pool closed cleanly.");
+        process.exit(0);
+      } catch (err) {
+        app.log.error({ err }, "Error during graceful shutdown");
+        process.exit(1);
       }
-      reply.status(404).send({ error: 'Not found' });
     });
   }
 
+  // Start HTTP Listener
   try {
-    await server.listen({ port, host: '0.0.0.0' });
-    console.log(`Server listening on port ${port}`);
+    await app.listen({ port: env.PORT, host: env.HOST });
+    app.log.info(`Server listening at http://${env.HOST}:${env.PORT}`);
+    app.log.info(`Swagger API Documentation available at http://${env.HOST}:${env.PORT}/docs`);
   } catch (err) {
-    server.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
 }
 
-main();
+startServer();

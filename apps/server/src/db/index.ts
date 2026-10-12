@@ -1,8 +1,28 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema.js';
+import pg from "pg";
+import { env } from "../config/env.js";
 
-const connectionUri = process.env.DATABASE_URL || 'postgresql://postgres:rootpassword@localhost:5432/squizme';
+const { Pool } = pg;
 
-export const client = postgres(connectionUri);
-export const db = drizzle(client, { schema });
+export const pool = new Pool({
+  connectionString: env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+
+pool.on("error", (err) => {
+  console.error("Unexpected error on idle PostgreSQL client", err);
+});
+
+export async function pingDb(): Promise<boolean> {
+  try {
+    const res = await pool.query("SELECT 1 AS alive");
+    return res.rows[0]?.alive === 1;
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function closeDb(): Promise<void> {
+  await pool.end();
+}
