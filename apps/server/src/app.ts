@@ -3,10 +3,12 @@ import { registerCors } from "./plugins/cors.js";
 import { registerHelmet } from "./plugins/helmet.js";
 import { registerSensible } from "./plugins/sensible.js";
 import { registerSwagger } from "./plugins/swagger.js";
+import { registerAuth } from "./plugins/auth.js";
 import { healthRoutes } from "./modules/health/routes.js";
 import { quizRoutes } from "./modules/quizzes/routes.js";
 import { attemptRoutes } from "./modules/attempts/routes.js";
 import { generatorRoutes } from "./modules/generator/routes.js";
+import { generationRoutes } from "./modules/generation/generation.routes.js";
 import { docsRoutes } from "./modules/docs/routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -37,6 +39,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await registerCors(app);
   await registerHelmet(app);
   await registerSwagger(app);
+  await registerAuth(app);
   await app.register(docsRoutes);
 
   // System & Health Routes
@@ -46,6 +49,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(quizRoutes, { prefix: "/api" });
   await app.register(attemptRoutes, { prefix: "/api" });
   await app.register(generatorRoutes, { prefix: "/api" });
+  await app.register(generationRoutes, { prefix: "/api" });
 
   // Not Found Handler
   app.setNotFoundHandler((request, reply) => {

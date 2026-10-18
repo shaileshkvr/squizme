@@ -1,16 +1,20 @@
 import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
-import { closeDb } from "./db/index.js";
-import { bootstrapDatabase } from "./db/schema.js";
+import { closeDb, pool } from "./db/index.js";
+import { runMigrations } from "./db/migrator.js";
 
 async function startServer() {
   const app = await buildApp();
 
-  // Initialize Database Schema
+  // Initialize Database Schema via Migrations
   try {
-    app.log.info("Connecting to PostgreSQL and verifying schema...");
-    await bootstrapDatabase();
-    app.log.info("Database schema initialized successfully.");
+    app.log.info("Running database migrations...");
+    const applied = await runMigrations(pool);
+    if (applied.length > 0) {
+      app.log.info({ applied }, "Applied database migrations successfully.");
+    } else {
+      app.log.info("Database schema is up to date.");
+    }
   } catch (error) {
     app.log.warn(
       { error },
