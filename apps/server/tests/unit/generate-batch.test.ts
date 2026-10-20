@@ -10,7 +10,7 @@ describe("Batch Generation with Targeted Replacement", () => {
   const fakeGroq = {} as Groq;
 
   const context: BatchGenerationContext = {
-    prompt: "Cellular Biology",
+    prompt: "Cellular Biology and Function",
     mode: "learning",
     difficulty: "medium",
     batchNumber: 1,

@@ -241,6 +241,17 @@ export async function saveTopicPlanAndBatches(
   }
 }
 
+export function shuffleArray<T>(array: readonly T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = result[i];
+    result[i] = result[j];
+    result[j] = temp;
+  }
+  return result;
+}
+
 export async function commitBatchTransaction(
   pool: Pool,
   params: {
@@ -299,18 +310,24 @@ export async function commitBatchTransaction(
 
     // 3. If final batch, create quiz and complete job
     if (isFinalBatch) {
-      // Map questions to standard schema structure with generated IDs
-      const mappedQuestions = allAccumulatedQuestions.map((q, qIdx) => ({
-        id: `q-${qIdx + 1}`,
-        prompt: q.prompt,
-        topic: q.topic,
-        explanation: q.explanation,
-        options: q.options.map((opt, oIdx) => ({
-          id: `opt-${qIdx + 1}-${oIdx + 1}`,
-          text: opt.text,
-          isCorrect: opt.isCorrect,
-        })),
-      }));
+      // Shuffle questions across all accumulated batches so topics and difficulty are interleaved
+      const shuffledQuestions = shuffleArray(allAccumulatedQuestions);
+
+      // Map questions to standard schema structure with generated IDs and randomized options
+      const mappedQuestions = shuffledQuestions.map((q, qIdx) => {
+        const shuffledOptions = shuffleArray(q.options);
+        return {
+          id: `q-${qIdx + 1}`,
+          prompt: q.prompt,
+          topic: q.topic,
+          explanation: q.explanation,
+          options: shuffledOptions.map((opt, oIdx) => ({
+            id: `opt-${qIdx + 1}-${oIdx + 1}`,
+            text: opt.text,
+            isCorrect: opt.isCorrect,
+          })),
+        };
+      });
 
       const quizInsert = await client.query<{ id: string }>(
         `INSERT INTO quizzes (title, description, questions)

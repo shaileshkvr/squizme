@@ -43,6 +43,23 @@ CRITICAL RULES:
 5. Do NOT include markdown code blocks (e.g. \`\`\`json) outside the JSON object. Return the raw JSON object.`;
 }
 
+export function formatDifficultyDirective(difficulty: string): string {
+  switch (difficulty) {
+    case "easy":
+      return "Easy (foundational concepts, direct definitions, basic recall)";
+    case "medium":
+      return "Medium (application, scenario-based understanding, trade-off comparisons)";
+    case "mixed_easy_medium":
+      return "Mixed Easy & Medium (evenly balance foundational concept questions and practical application questions)";
+    case "hard":
+      return "Hard (complex problem-solving, architectural trade-offs, edge cases, subtle failure modes)";
+    case "mixed_medium_hard":
+      return "Mixed Medium & Hard (evenly balance practical application questions and deep analytical edge-case questions)";
+    default:
+      return difficulty;
+  }
+}
+
 export function buildUserPrompt(
   context: BatchGenerationContext,
   topicAllocations: Array<{ topicName: string; questionCount: number }>,
@@ -53,7 +70,7 @@ export function buildUserPrompt(
     .join("\n");
 
   let prompt = `Subject / Instruction: ${context.prompt}
-Target Difficulty: ${context.difficulty}
+Target Difficulty: ${formatDifficultyDirective(context.difficulty)}
 Learning Mode: ${context.mode}
 
 REQUIRED QUESTION ALLOCATIONS FOR THIS BATCH:

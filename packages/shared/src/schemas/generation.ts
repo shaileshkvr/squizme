@@ -12,14 +12,20 @@ export const GenerationJobStatusSchema = z.enum([
 ]);
 
 export const GenerationModeSchema = z.enum(["learning", "assessment"]);
-export const GenerationDifficultySchema = z.enum(["easy", "medium", "hard"]);
+export const GenerationDifficultySchema = z.enum([
+  "easy",
+  "medium",
+  "mixed_easy_medium",
+  "hard",
+  "mixed_medium_hard",
+]);
 
 export const GenerationRequestSchema = z.object({
   idempotencyKey: z.string().uuid("Invalid idempotency key format"),
   prompt: z
     .string()
     .trim()
-    .min(1, "Prompt cannot be empty")
+    .min(20, "Prompt must be at least 20 characters")
     .max(5000, "Prompt must not exceed 5000 characters"),
   sourceId: z.string().uuid().optional(),
   mode: GenerationModeSchema.default("learning"),

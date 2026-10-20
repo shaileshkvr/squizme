@@ -33,7 +33,7 @@ describe("Quiz Generation API Endpoints", () => {
       headers: { "x-user-id": testUserId },
       payload: {
         idempotencyKey,
-        prompt: "General Relativity",
+        prompt: "General Relativity and Gravity",
         mode: "assessment",
         difficulty: "hard",
         questionCount: 10,
@@ -53,7 +53,7 @@ describe("Quiz Generation API Endpoints", () => {
       headers: { "x-user-id": testUserId },
       payload: {
         idempotencyKey,
-        prompt: "General Relativity",
+        prompt: "General Relativity and Gravity",
         mode: "assessment",
         difficulty: "hard",
         questionCount: 10,
@@ -88,7 +88,7 @@ describe("Quiz Generation API Endpoints", () => {
       headers: { "x-user-id": testUserId },
       payload: {
         idempotencyKey: "99999999-9999-9999-9999-999999999999",
-        prompt: "Black Holes",
+        prompt: "Black Holes and Singularity",
         mode: "learning",
         difficulty: "easy",
         questionCount: 5,

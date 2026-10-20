@@ -67,6 +67,17 @@ describe("Auth Plugin & Shared Contracts", () => {
     expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 0 }).success).toBe(false);
     expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 4 }).success).toBe(false);
     expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 51 }).success).toBe(false);
+
+    // Prompt length check: < 20 fails, >= 20 passes
+    expect(GenerationRequestSchema.safeParse({ ...valid, prompt: "1234567890123456789" }).success).toBe(false);
+    expect(GenerationRequestSchema.safeParse({ ...valid, prompt: "12345678901234567890" }).success).toBe(true);
+
+    // 5-tier difficulty check
+    const difficulties = ["easy", "medium", "mixed_easy_medium", "hard", "mixed_medium_hard"] as const;
+    for (const diff of difficulties) {
+      expect(GenerationRequestSchema.safeParse({ ...valid, difficulty: diff }).success).toBe(true);
+    }
+    expect(GenerationRequestSchema.safeParse({ ...valid, difficulty: "super_hard" }).success).toBe(false);
   });
 
   it("validates TopicPlanSchema successfully", () => {

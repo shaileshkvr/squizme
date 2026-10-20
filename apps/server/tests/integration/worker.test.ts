@@ -25,7 +25,7 @@ describe("Generation Worker End-to-End Execution", () => {
     const key = "66666666-6666-6666-6666-666666666666";
     const { job } = await createGenerationJob(pool, testUserId, {
       idempotencyKey: key,
-      prompt: "Renewable Energy",
+      prompt: "Renewable Energy and Solar Power",
       mode: "learning",
       difficulty: "easy",
       questionCount: 5,

@@ -151,7 +151,7 @@ describe("Job Repository Integration Tests", () => {
     const key = "44444444-4444-4444-4444-444444444444";
     const req: GenerationRequest = {
       idempotencyKey: key,
-      prompt: "Astrophysics",
+      prompt: "Astrophysics and Planetary Science",
       mode: "learning",
       difficulty: "hard",
       questionCount: 10,

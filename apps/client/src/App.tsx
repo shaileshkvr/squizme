@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { GenerationRequest, JobStatusResponse } from "@squizme/shared";
+import type {
+  GenerationDifficulty,
+  GenerationRequest,
+  JobStatusResponse,
+} from "@squizme/shared";
 import {
   AlertCircle,
   Check,
@@ -21,7 +25,7 @@ const API_BASE = "/api";
 export default function App() {
   const [prompt, setPrompt] = useState("");
   const [questionCount, setQuestionCount] = useState<number | "">(5);
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [difficulty, setDifficulty] = useState<GenerationDifficulty>("medium");
   const [mode, setMode] = useState<"learning" | "assessment">("assessment");
 
   const [jobId, setJobId] = useState<string | null>(null);
@@ -91,6 +95,8 @@ export default function App() {
     }, 1500);
   };
 
+  const isPromptValid = prompt.trim().length >= 20;
+
   const isQuestionCountValid =
     typeof questionCount === "number" &&
     !isNaN(questionCount) &&
@@ -105,7 +111,7 @@ export default function App() {
 
   // Submit new generation job
   const handleSubmit = async () => {
-    if (!prompt.trim() || !isQuestionCountValid) return;
+    if (!isPromptValid || !isQuestionCountValid) return;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -288,18 +294,32 @@ export default function App() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. '10 multiple-choice questions on Distributed Consensus Algorithms (Raft, Paxos, PBFT)'"
-              className="min-h-[120px] font-mono text-sm resize-y"
-            />
+            <div>
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="e.g. '10 multiple-choice questions on Distributed Consensus Algorithms (Raft, Paxos, PBFT)'"
+                className="min-h-[120px] font-mono text-sm resize-y"
+              />
+              <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
+                {prompt.length > 0 && !isPromptValid ? (
+                  <span className="text-amber-400">
+                    Prompt must be at least 20 characters ({prompt.trim().length}/20)
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <span className="text-muted-foreground ml-auto">
+                  {prompt.trim().length} chars
+                </span>
+              </div>
+            </div>
 
             {/* Parameter Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div>
                 <label className="text-xs text-muted-foreground block mb-1 font-medium">
-                  Question Count (5 - 50)
+                  Question Count
                 </label>
                 <input
                   type="number"
@@ -321,19 +341,14 @@ export default function App() {
                       : "border-input focus:ring-ring"
                   }`}
                 />
-                {isQuestionCountBelowMin && (
+                {(isQuestionCountBelowMin || questionCount === "") && (
                   <p className="text-[11px] text-amber-400 mt-1 font-mono">
-                    Question count must be at least 5.
+                    At least 5 questions
                   </p>
                 )}
                 {isQuestionCountAboveMax && (
                   <p className="text-[11px] text-amber-400 mt-1 font-mono">
                     Question count cannot exceed 50.
-                  </p>
-                )}
-                {questionCount === "" && (
-                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
-                    Please enter a question count (5 - 50).
                   </p>
                 )}
               </div>
@@ -344,12 +359,14 @@ export default function App() {
                 </label>
                 <select
                   value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")}
+                  onChange={(e) => setDifficulty(e.target.value as GenerationDifficulty)}
                   className="w-full h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono"
                 >
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
+                  <option value="mixed_easy_medium">Mixed (Easy & Medium)</option>
                   <option value="hard">Hard</option>
+                  <option value="mixed_medium_hard">Mixed (Medium & Hard)</option>
                 </select>
               </div>
 
@@ -376,7 +393,7 @@ export default function App() {
                   size="sm"
                   disabled={
                     isSubmitting ||
-                    !prompt.trim() ||
+                    !isPromptValid ||
                     Boolean(isJobActive) ||
                     !isQuestionCountValid
                   }
