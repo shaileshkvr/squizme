@@ -232,7 +232,7 @@ MAX_INFRASTRUCTURE_RETRIES: z.coerce.number().default(3),
 MAX_BATCH_SIZE: z.coerce.number().default(17),
 MAX_CONTENT_RETRIES: z.coerce.number().default(2),
 MIN_ACCEPTANCE_RATIO: z.coerce.number().default(0.9),
-MAX_QUESTION_COUNT: z.coerce.number().default(100),
+MAX_QUESTION_COUNT: z.coerce.number().default(50),
 MAX_PROMPT_LENGTH: z.coerce.number().default(5000),
 ```
 
@@ -1397,7 +1397,7 @@ const GenerationRequestSchema = z.object({
   sourceId: z.string().uuid().optional(),
   mode: z.enum(['learning', 'assessment']),
   difficulty: z.enum(['easy', 'medium', 'hard']),
-  questionCount: z.number().int().min(5).max(100),
+  questionCount: z.number().int().min(5).max(50),
 });
 ```
 

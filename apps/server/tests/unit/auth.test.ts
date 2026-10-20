@@ -58,6 +58,15 @@ describe("Auth Plugin & Shared Contracts", () => {
     };
     const parsed = GenerationRequestSchema.safeParse(valid);
     expect(parsed.success).toBe(true);
+
+    // Boundary check: 5 and 50 valid
+    expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 5 }).success).toBe(true);
+    expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 50 }).success).toBe(true);
+
+    // Boundary check: 0, 4, and 51 invalid
+    expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 0 }).success).toBe(false);
+    expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 4 }).success).toBe(false);
+    expect(GenerationRequestSchema.safeParse({ ...valid, questionCount: 51 }).success).toBe(false);
   });
 
   it("validates TopicPlanSchema successfully", () => {

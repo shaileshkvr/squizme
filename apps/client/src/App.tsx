@@ -20,7 +20,7 @@ const API_BASE = "/api";
 
 export default function App() {
   const [prompt, setPrompt] = useState("");
-  const [questionCount, setQuestionCount] = useState<number>(5);
+  const [questionCount, setQuestionCount] = useState<number | "">(5);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   const [mode, setMode] = useState<"learning" | "assessment">("assessment");
 
@@ -91,9 +91,21 @@ export default function App() {
     }, 1500);
   };
 
+  const isQuestionCountValid =
+    typeof questionCount === "number" &&
+    !isNaN(questionCount) &&
+    questionCount >= 5 &&
+    questionCount <= 50;
+
+  const isQuestionCountBelowMin =
+    typeof questionCount === "number" && !isNaN(questionCount) && questionCount < 5;
+
+  const isQuestionCountAboveMax =
+    typeof questionCount === "number" && !isNaN(questionCount) && questionCount > 50;
+
   // Submit new generation job
   const handleSubmit = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || !isQuestionCountValid) return;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -287,16 +299,43 @@ export default function App() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div>
                 <label className="text-xs text-muted-foreground block mb-1 font-medium">
-                  Question Count (5 - 100)
+                  Question Count (5 - 50)
                 </label>
                 <input
                   type="number"
-                  min={5}
-                  max={100}
+                  min={0}
+                  max={50}
                   value={questionCount}
-                  onChange={(e) => setQuestionCount(Math.max(5, Math.min(100, Number(e.target.value))))}
-                  className="w-full h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setQuestionCount("");
+                    } else {
+                      const parsed = parseInt(val, 10);
+                      setQuestionCount(isNaN(parsed) ? "" : parsed);
+                    }
+                  }}
+                  className={`w-full h-9 rounded-md border bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 font-mono transition-colors ${
+                    !isQuestionCountValid
+                      ? "border-amber-500/70 focus:ring-amber-500 text-amber-200"
+                      : "border-input focus:ring-ring"
+                  }`}
                 />
+                {isQuestionCountBelowMin && (
+                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
+                    Question count must be at least 5.
+                  </p>
+                )}
+                {isQuestionCountAboveMax && (
+                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
+                    Question count cannot exceed 50.
+                  </p>
+                )}
+                {questionCount === "" && (
+                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
+                    Please enter a question count (5 - 50).
+                  </p>
+                )}
               </div>
 
               <div>
@@ -335,7 +374,12 @@ export default function App() {
                 <Button
                   type="button"
                   size="sm"
-                  disabled={isSubmitting || !prompt.trim() || Boolean(isJobActive)}
+                  disabled={
+                    isSubmitting ||
+                    !prompt.trim() ||
+                    Boolean(isJobActive) ||
+                    !isQuestionCountValid
+                  }
                   onClick={handleSubmit}
                   className="gap-1.5 h-9 text-xs cursor-pointer font-medium"
                 >

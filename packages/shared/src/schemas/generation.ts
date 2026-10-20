@@ -24,7 +24,12 @@ export const GenerationRequestSchema = z.object({
   sourceId: z.string().uuid().optional(),
   mode: GenerationModeSchema.default("learning"),
   difficulty: GenerationDifficultySchema.default("medium"),
-  questionCount: z.number().int().min(5).max(100).default(10),
+  questionCount: z
+    .number()
+    .int("Question count must be an integer")
+    .min(5, "Question count must be at least 5")
+    .max(50, "Question count cannot exceed 50")
+    .default(10),
 });
 
 export const TopicAllocationSchema = z.object({
