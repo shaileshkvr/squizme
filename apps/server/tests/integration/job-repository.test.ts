@@ -10,6 +10,7 @@ import {
   requestJobCancellation,
   finalizeJobCancellation,
   getJobById,
+  failJob,
 } from "../../src/modules/generation/jobs/job.repository.js";
 import type { GenerationRequest, TopicPlan } from "@squizme/shared";
 
@@ -176,5 +177,32 @@ describe("Job Repository Integration Tests", () => {
 
     // Clean up
     await pool.query("DELETE FROM generation_jobs WHERE id = $1;", [job.id]);
+  });
+
+  it("persists error code and critic message when failJob is called", async () => {
+    const key = "55555555-5555-5555-5555-555555555555";
+    const req: GenerationRequest = {
+      idempotencyKey: key,
+      prompt: "asdfghjkl qwertyuiop nonsense",
+      mode: "learning",
+      difficulty: "easy",
+      questionCount: 5,
+    };
+
+    const { job } = await createGenerationJob(pool, testUserId, req);
+    await failJob(
+      pool,
+      job.id,
+      "TOPIC_REJECTED",
+      "That doesn't look like a real topic."
+    );
+
+    const failedJob = await getJobById(pool, job.id);
+    expect(failedJob).not.toBeNull();
+    expect(failedJob!.status).toBe("failed");
+    expect(failedJob!.last_error_code).toBe("TOPIC_REJECTED");
+    expect(failedJob!.last_error_message).toBe(
+      "That doesn't look like a real topic."
+    );
   });
 });

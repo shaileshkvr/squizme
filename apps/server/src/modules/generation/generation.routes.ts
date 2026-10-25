@@ -12,7 +12,25 @@ import {
   type GenerationJobRow,
 } from "./jobs/job.repository.js";
 
+const DEFAULT_ERROR_MESSAGES: Record<string, string> = {
+  TOPIC_REJECTED: "That doesn't look like a real topic.",
+  TOPIC_REJECTED_GIBBERISH: "That doesn't look like a real topic.",
+  QUESTION_GENERATION_FAILED: "Generation failed. Try another prompt.",
+  GENERATION_CANCELLED: "Quiz generation was cancelled.",
+  GENERATION_FAILED: "Generation encountered an issue.",
+};
+
 function formatJobStatusResponse(job: GenerationJobRow): JobStatusResponse {
+  let errorMessage =
+    job.last_error_message ||
+    (job.last_error_code
+      ? DEFAULT_ERROR_MESSAGES[job.last_error_code] || "Generation encountered an issue."
+      : null);
+
+  if (errorMessage && errorMessage.length > 50) {
+    errorMessage = errorMessage.slice(0, 47) + "...";
+  }
+
   return {
     jobId: job.id,
     status: job.status,
@@ -22,7 +40,7 @@ function formatJobStatusResponse(job: GenerationJobRow): JobStatusResponse {
     totalBatches: job.total_batch_count,
     quizId: job.quiz_id,
     error: job.last_error_code
-      ? { code: job.last_error_code, message: "Generation encountered an issue" }
+      ? { code: job.last_error_code, message: errorMessage || "Generation encountered an issue." }
       : null,
     createdAt: job.created_at.toISOString(),
     updatedAt: job.updated_at.toISOString(),

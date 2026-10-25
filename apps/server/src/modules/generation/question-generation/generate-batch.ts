@@ -1,4 +1,5 @@
 import type Groq from "groq-sdk";
+import { ModelBatchQuestionsOutputSchema } from "@squizme/shared";
 import { env } from "../../../config/env.js";
 import { callGroqChat } from "../integrations/groq-client.js";
 import {
@@ -6,6 +7,11 @@ import {
   type RawGeneratedQuestion,
   type ValidatedQuestion,
 } from "../validation/validate-batch.js";
+import { formatDifficultyDirective as formatDifficulty } from "../../../prompts/question/difficulty.js";
+import {
+  buildBatchGenerationSystemPrompt,
+  buildBatchGenerationUserPrompt,
+} from "../../../prompts/tasks/generate-batch.js";
 
 export interface BatchGenerationContext {
   prompt: string;
@@ -18,46 +24,11 @@ export interface BatchGenerationContext {
 }
 
 export function buildSystemPrompt(): string {
-  return `You are an expert educational assessment developer. Generate high-quality multiple-choice questions adhering strictly to the requested topics, counts, and difficulty.
-
-CRITICAL RULES:
-1. Return ONLY a valid JSON object matching this schema:
-   {
-     "questions": [
-       {
-         "prompt": "Clear, direct question text",
-         "topic": "Exact topic name from requested topics",
-         "options": [
-           { "text": "Choice 1", "isCorrect": true },
-           { "text": "Choice 2", "isCorrect": false },
-           { "text": "Choice 3", "isCorrect": false },
-           { "text": "Choice 4", "isCorrect": false }
-         ],
-         "explanation": "Clear explanation of why the correct choice is true"
-       }
-     ]
-   }
-2. Exactly one option must have "isCorrect": true per question.
-3. All option texts must be distinct and plausible.
-4. Do NOT repeat or paraphrase any previously generated questions.
-5. Do NOT include markdown code blocks (e.g. \`\`\`json) outside the JSON object. Return the raw JSON object.`;
+  return buildBatchGenerationSystemPrompt();
 }
 
 export function formatDifficultyDirective(difficulty: string): string {
-  switch (difficulty) {
-    case "easy":
-      return "Easy (foundational concepts, direct definitions, basic recall)";
-    case "medium":
-      return "Medium (application, scenario-based understanding, trade-off comparisons)";
-    case "mixed_easy_medium":
-      return "Mixed Easy & Medium (evenly balance foundational concept questions and practical application questions)";
-    case "hard":
-      return "Hard (complex problem-solving, architectural trade-offs, edge cases, subtle failure modes)";
-    case "mixed_medium_hard":
-      return "Mixed Medium & Hard (evenly balance practical application questions and deep analytical edge-case questions)";
-    default:
-      return difficulty;
-  }
+  return formatDifficulty(difficulty);
 }
 
 export function buildUserPrompt(
@@ -65,33 +36,15 @@ export function buildUserPrompt(
   topicAllocations: Array<{ topicName: string; questionCount: number }>,
   repairFeedback?: string
 ): string {
-  const topicList = topicAllocations
-    .map((t) => `- Topic "${t.topicName}": ${t.questionCount} question(s) required`)
-    .join("\n");
-
-  let prompt = `Subject / Instruction: ${context.prompt}
-Target Difficulty: ${formatDifficultyDirective(context.difficulty)}
-Learning Mode: ${context.mode}
-
-REQUIRED QUESTION ALLOCATIONS FOR THIS BATCH:
-${topicList}
-`;
-
-  if (context.sourceContext) {
-    prompt += `\nSOURCE MATERIAL:\n${context.sourceContext}\n`;
-  }
-
-  if (context.previousQuestionPrompts.length > 0) {
-    prompt += `\nDO NOT DUPLICATE THESE PREVIOUS QUESTIONS:\n${context.previousQuestionPrompts
-      .map((q, idx) => `${idx + 1}. ${q}`)
-      .join("\n")}\n`;
-  }
-
-  if (repairFeedback) {
-    prompt += `\nREPAIR FEEDBACK FROM PREVIOUS ATTEMPT:\n${repairFeedback}\nPlease replace the failed slots with valid questions.\n`;
-  }
-
-  return prompt;
+  return buildBatchGenerationUserPrompt({
+    prompt: context.prompt,
+    mode: context.mode,
+    difficulty: context.difficulty,
+    topicAllocations,
+    sourceContext: context.sourceContext,
+    previousQuestionPrompts: context.previousQuestionPrompts,
+    repairFeedback,
+  });
 }
 
 export async function generateBatchQuestions(
@@ -123,15 +76,22 @@ export async function generateBatchQuestions(
       ],
     });
 
-    let parsed: { questions?: RawGeneratedQuestion[] };
+    let rawQuestions: RawGeneratedQuestion[] = [];
     try {
-      parsed = JSON.parse(rawResponse);
+      const json = JSON.parse(rawResponse);
+      const validated = ModelBatchQuestionsOutputSchema.safeParse(json);
+      if (validated.success) {
+        rawQuestions = validated.data.questions;
+      } else if (Array.isArray(json?.questions)) {
+        rawQuestions = json.questions;
+      } else {
+        repairFeedback = "Model output was not valid JSON schema matching { questions: [...] }.";
+        continue;
+      }
     } catch {
       repairFeedback = "Model output was not valid JSON. Ensure strictly valid JSON format.";
       continue;
     }
-
-    const rawQuestions = Array.isArray(parsed.questions) ? parsed.questions : [];
 
     const validation = validateBatchQuestions({
       questions: rawQuestions,

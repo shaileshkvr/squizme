@@ -1,7 +1,54 @@
 import type Groq from "groq-sdk";
-import type { TopicPlan } from "@squizme/shared";
+import {
+  ModelCurriculumPlanOutputSchema,
+  type TopicPlan,
+} from "@squizme/shared";
 import { env } from "../../../config/env.js";
 import { callGroqChat } from "../integrations/groq-client.js";
+import {
+  buildCurriculumPlannerSystemPrompt,
+  buildCurriculumPlannerUserPrompt,
+} from "../../../prompts/tasks/analyze-topic.js";
+
+export class TopicRejectionError extends Error {
+  constructor(
+    public readonly code: string = "TOPIC_REJECTED",
+    message: string = "That doesn't look like a real topic."
+  ) {
+    super(message.length > 50 ? message.slice(0, 47) + "..." : message);
+    this.name = "TopicRejectionError";
+  }
+}
+
+/**
+ * Deterministic pre-flight check. Only catches input with zero semantic
+ * content — repeated characters, keyboard runs, or no recognizable words.
+ * Anything composed of real words (even across unrelated domains) passes.
+ */
+export function isObviousNonContent(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed.length < 4) return true;
+
+  // Collapse repeated characters — "aaaaaaa" → "a"
+  const collapsed = trimmed.replace(/(.)\1{3,}/g, "$1");
+  if (collapsed.length < trimmed.length * 0.4) return true;
+
+  // Keyboard row runs / mash sequences
+  const normalized = trimmed.toLowerCase();
+  const keyboardPatterns = [
+    "asdfjkl",
+    "asdfghjkl",
+    "qwertyuiop",
+    "zxcvbnm",
+    "qwerasdf",
+    "12345678",
+  ];
+  if (keyboardPatterns.some((pattern) => normalized.includes(pattern))) {
+    return true;
+  }
+
+  return false;
+}
 
 export async function analyzeTopicsAndPlan(
   prompt: string,
@@ -11,27 +58,24 @@ export async function analyzeTopicsAndPlan(
   groqClient: Groq,
   sourceContext?: string
 ): Promise<TopicPlan> {
-  const systemPrompt = `You are a curriculum architect and pedagogical planner.
-Analyze the user's topic and create a topic distribution plan for a ${totalQuestions}-question quiz.
+  // Deterministic guardrail — catches keyboard mashing before burning tokens
+  if (isObviousNonContent(prompt)) {
+    throw new TopicRejectionError(
+      "TOPIC_REJECTED",
+      "That doesn't look like a real topic."
+    );
+  }
 
-CRITICAL INVARIANTS:
-1. Return ONLY a valid JSON object matching:
-   {
-     "topics": [
-       { "name": "Topic name", "questionCount": 5 }
-     ]
-   }
-2. The sum of all questionCount values in "topics" MUST equal EXACTLY ${totalQuestions}.
-3. Create between 2 and 6 balanced topics.
-4. Each questionCount must be a positive integer.`;
+  const systemPrompt = buildCurriculumPlannerSystemPrompt(totalQuestions);
+  const userPrompt = buildCurriculumPlannerUserPrompt({
+    prompt,
+    mode,
+    difficulty,
+    totalQuestions,
+    sourceContext,
+  });
 
-  const userPrompt = `Topic / Request: ${prompt}
-Mode: ${mode}
-Difficulty: ${difficulty}
-Total Questions Required: ${totalQuestions}
-${sourceContext ? `\nSource Material Context:\n${sourceContext}\n` : ""}`;
-
-  let parsed: { topics?: Array<{ name: string; questionCount: number }> } = {};
+  let rawTopics: Array<{ name: string; questionCount: number }>;
 
   try {
     const raw = await callGroqChat(groqClient, {
@@ -42,17 +86,20 @@ ${sourceContext ? `\nSource Material Context:\n${sourceContext}\n` : ""}`;
       ],
       temperature: 0.3,
     });
-    parsed = JSON.parse(raw);
-  } catch {
-    // Fallback if model failed or invalid JSON: generate a default single/dual topic plan
-    parsed = {
-      topics: [{ name: prompt.slice(0, 50), questionCount: totalQuestions }],
-    };
+    const json = JSON.parse(raw);
+    const validated = ModelCurriculumPlanOutputSchema.safeParse(json);
+    if (validated.success && validated.data.topics.length > 0) {
+      rawTopics = validated.data.topics;
+    } else {
+      rawTopics = [{ name: prompt.slice(0, 50), questionCount: totalQuestions }];
+    }
+  } catch (err) {
+    if (err instanceof TopicRejectionError) {
+      throw err;
+    }
+    // Fallback if model failed or invalid JSON: generate a default single topic plan
+    rawTopics = [{ name: prompt.slice(0, 50), questionCount: totalQuestions }];
   }
-
-  const rawTopics = Array.isArray(parsed.topics) && parsed.topics.length > 0
-    ? parsed.topics
-    : [{ name: prompt.slice(0, 50), questionCount: totalQuestions }];
 
   // Deterministic arithmetic enforcement
   // Guarantee sum equals totalQuestions exactly

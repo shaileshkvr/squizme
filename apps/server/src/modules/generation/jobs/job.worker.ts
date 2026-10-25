@@ -3,7 +3,7 @@ import type Groq from "groq-sdk";
 import { env } from "../../../config/env.js";
 import { createGroqClient } from "../integrations/groq-client.js";
 import { planBatches, type PlannedBatch } from "../planning/batch-planner.js";
-import { analyzeTopicsAndPlan } from "../planning/topic-analyzer.js";
+import { analyzeTopicsAndPlan, TopicRejectionError } from "../planning/topic-analyzer.js";
 import {
   generateBatchQuestions,
   type BatchGenerationContext,
@@ -198,8 +198,13 @@ export class GenerationWorker {
         }
       }
     } catch (err) {
+      if (err instanceof TopicRejectionError) {
+        console.warn(`[Worker ${this.workerId}] Job ${jobId} rejected during planning: ${err.message}`);
+        await failJob(this.pool, jobId, err.code, err.message);
+        return;
+      }
       console.error(`[Worker ${this.workerId}] Job ${jobId} failed:`, err);
-      await failJob(this.pool, jobId, "GENERATION_FAILED");
+      await failJob(this.pool, jobId, "GENERATION_FAILED", err instanceof Error ? err.message : undefined);
     } finally {
       clearInterval(heartbeatTimer);
     }

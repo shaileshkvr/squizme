@@ -23,6 +23,7 @@ export interface GenerationJobRow {
   total_batch_count: number;
   plan: TopicPlan | null;
   last_error_code: string | null;
+  last_error_message: string | null;
   attempt_count: number;
   lease_owner: string | null;
   lease_expires_at: Date | null;
@@ -435,16 +436,18 @@ export async function finalizeJobCancellation(
 export async function failJob(
   pool: Pool,
   jobId: string,
-  errorCode: string
+  errorCode: string,
+  errorMessage?: string
 ): Promise<void> {
   await pool.query(
     `UPDATE generation_jobs
      SET status = 'failed',
          last_error_code = $2,
+         last_error_message = COALESCE($3, last_error_message),
          completed_at = NOW(),
          updated_at = NOW()
      WHERE id = $1;`,
-    [jobId, errorCode]
+    [jobId, errorCode, errorMessage ?? null]
   );
 }
 

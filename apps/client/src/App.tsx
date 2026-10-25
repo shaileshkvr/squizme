@@ -3,26 +3,44 @@ import type {
   GenerationDifficulty,
   GenerationRequest,
   JobStatusResponse,
+  UserPublic,
 } from "@squizme/shared";
 import {
   AlertCircle,
   Check,
   Copy,
+  Home,
   Loader2,
+  LogIn,
+  LogOut,
   Play,
   Search,
   Square,
   Terminal,
   Trash2,
+  User,
+  UserPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { LandingPage } from "@/components/LandingPage";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { RegisterForm } from "@/components/auth/RegisterForm";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 
 const API_BASE = "/api";
 
+type AppView = "landing" | "login" | "register" | "forgot-password" | "generator";
+
 export default function App() {
+  // Navigation & Authentication state
+  const [currentView, setCurrentView] = useState<AppView>("landing");
+  const [currentUser, setCurrentUser] = useState<UserPublic | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  // Generator form state
   const [prompt, setPrompt] = useState("");
   const [questionCount, setQuestionCount] = useState<number | "">(5);
   const [difficulty, setDifficulty] = useState<GenerationDifficulty>("medium");
@@ -47,14 +65,84 @@ export default function App() {
     }
   };
 
+  // Restore authenticated session on mount
   useEffect(() => {
+    const savedToken = localStorage.getItem("squizme_session_token");
+    const savedUser = localStorage.getItem("squizme_user");
+
+    if (savedToken && savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        setSessionToken(savedToken);
+        setCurrentUser(user);
+        setCurrentView("generator");
+
+        // Validate session with backend
+        fetch(`${API_BASE}/auth/me`, {
+          headers: { Authorization: `Bearer ${savedToken}` },
+        })
+          .then((res) => {
+            if (res.ok) {
+              return res.json();
+            }
+            throw new Error("Invalid session");
+          })
+          .then((data) => {
+            setCurrentUser(data.user);
+            localStorage.setItem("squizme_user", JSON.stringify(data.user));
+          })
+          .catch(() => {
+            // Expired or invalid session
+            localStorage.removeItem("squizme_session_token");
+            localStorage.removeItem("squizme_user");
+            setSessionToken(null);
+            setCurrentUser(null);
+            setCurrentView("landing");
+          });
+      } catch {
+        localStorage.removeItem("squizme_session_token");
+        localStorage.removeItem("squizme_user");
+      }
+    }
+
     return () => stopPolling();
   }, []);
+
+  const handleAuthSuccess = (user: UserPublic, token: string) => {
+    localStorage.setItem("squizme_session_token", token);
+    localStorage.setItem("squizme_user", JSON.stringify(user));
+    setSessionToken(token);
+    setCurrentUser(user);
+    setCurrentView("generator");
+  };
+
+  const handleLogout = async () => {
+    if (sessionToken) {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${sessionToken}` },
+        });
+      } catch {
+        // Ignore network errors on logout
+      }
+    }
+    localStorage.removeItem("squizme_session_token");
+    localStorage.removeItem("squizme_user");
+    setSessionToken(null);
+    setCurrentUser(null);
+    setCurrentView("landing");
+  };
 
   // Poll single job status
   const pollJob = async (id: string) => {
     try {
-      const res = await fetch(`${API_BASE}/quiz-generations/${id}`);
+      const headers: Record<string, string> = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
+      const res = await fetch(`${API_BASE}/quiz-generations/${id}`, { headers });
       const data: JobStatusResponse = await res.json();
 
       setJobStatus(data);
@@ -79,6 +167,9 @@ export default function App() {
       } else if (data.status === "failed" || data.status === "cancelled") {
         stopPolling();
         setRawOutput(data);
+        if (data.error?.message) {
+          setErrorMessage(data.error.message);
+        }
       } else {
         setRawOutput(data);
       }
@@ -95,7 +186,10 @@ export default function App() {
     }, 1500);
   };
 
-  const isPromptValid = prompt.trim().length >= 20;
+  // Validation rules
+  const trimmedPrompt = prompt.trim();
+  const promptCharCount = trimmedPrompt.length;
+  const isPromptValid = promptCharCount >= 20;
 
   const isQuestionCountValid =
     typeof questionCount === "number" &&
@@ -104,7 +198,8 @@ export default function App() {
     questionCount <= 50;
 
   const isQuestionCountBelowMin =
-    typeof questionCount === "number" && !isNaN(questionCount) && questionCount < 5;
+    questionCount === "" ||
+    (typeof questionCount === "number" && !isNaN(questionCount) && questionCount < 5);
 
   const isQuestionCountAboveMax =
     typeof questionCount === "number" && !isNaN(questionCount) && questionCount > 50;
@@ -129,9 +224,14 @@ export default function App() {
     };
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const res = await fetch(`${API_BASE}/quiz-generations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 
@@ -162,14 +262,24 @@ export default function App() {
 
     setIsCancelling(true);
     try {
+      const headers: Record<string, string> = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const res = await fetch(`${API_BASE}/quiz-generations/${targetJobId}/cancel`, {
         method: "POST",
+        headers,
       });
       const data = await res.json();
-      setRawOutput(data);
-      await pollJob(targetJobId);
+      if (res.ok) {
+        stopPolling();
+        pollJob(targetJobId);
+      } else {
+        setErrorMessage(data.message || "Failed to cancel job");
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error cancelling job";
+      const msg = err instanceof Error ? err.message : "Failed to cancel job";
       setErrorMessage(msg);
       setRawOutput({ error: msg });
     } finally {
@@ -177,25 +287,35 @@ export default function App() {
     }
   };
 
-  // Query server for any active job (recovery or status check)
+  // Query server for any active job
   const handleCheckActive = async () => {
     setIsCheckingActive(true);
     setErrorMessage(null);
     try {
-      const res = await fetch(`${API_BASE}/quiz-generations/active`);
-      if (res.status === 404) {
-        setErrorMessage("No active generation job currently running.");
-        setRawOutput({ message: "No active generation job found for user." });
-        return;
+      const headers: Record<string, string> = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
       }
 
+      const res = await fetch(`${API_BASE}/quiz-generations/active`, { headers });
+      if (res.status === 404) {
+        setRawOutput({ message: "No active generation job found for user." });
+        setJobStatus(null);
+        return;
+      }
       const data: JobStatusResponse = await res.json();
-      setJobId(data.jobId);
-      setJobStatus(data);
       setRawOutput(data);
-      startPolling(data.jobId);
+      setJobStatus(data);
+      setJobId(data.jobId);
+      if (
+        ["queued", "planning", "generating", "finalizing", "cancel_requested"].includes(
+          data.status
+        )
+      ) {
+        startPolling(data.jobId);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error querying active job";
+      const msg = err instanceof Error ? err.message : "Failed to query active job";
       setErrorMessage(msg);
       setRawOutput({ error: msg });
     } finally {
@@ -241,87 +361,183 @@ export default function App() {
     }
   };
 
+  // 1. Landing View
+  if (currentView === "landing") {
+    return (
+      <LandingPage
+        onOpenAuth={(m) => setCurrentView(m)}
+        onOpenGenerator={() => setCurrentView("generator")}
+        isAuthenticated={Boolean(currentUser)}
+        username={currentUser?.username}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  // 2. Auth Views
+  if (currentView === "login" || currentView === "register" || currentView === "forgot-password") {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
+        <div className="w-full max-w-md">
+          {currentView === "login" && (
+            <LoginForm
+              onSuccess={handleAuthSuccess}
+              onSwitchMode={(m) => setCurrentView(m)}
+              onCancel={() => setCurrentView(currentUser ? "generator" : "landing")}
+            />
+          )}
+          {currentView === "register" && (
+            <RegisterForm
+              onSuccess={handleAuthSuccess}
+              onSwitchMode={(m) => setCurrentView(m)}
+              onCancel={() => setCurrentView(currentUser ? "generator" : "landing")}
+            />
+          )}
+          {currentView === "forgot-password" && (
+            <ForgotPasswordForm
+              onSwitchMode={(m) => setCurrentView(m)}
+              onCancel={() => setCurrentView("login")}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Generator Console View
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-start p-4 sm:p-8 font-sans">
       <div className="w-full max-w-3xl space-y-6">
-        {/* Header Bar */}
+        {/* Top Header Bar with Auth status */}
         <header className="flex items-center justify-between border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
               <Terminal className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white">
-                Squizme Generator API Test Bench
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">
+                  Squizme Generator
+                </h1>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                  Console
+                </Badge>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Temporary Test Harness • Asynchronous Engine • Raw API Inspection
+                Asynchronous Multi-Model AI Quiz Synthesizer
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {jobStatus && (
-              <Badge variant={getStatusBadgeVariant(jobStatus.status)} className="capitalize font-mono">
-                {jobStatus.status}
-              </Badge>
-            )}
             <Button
-              type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={handleCheckActive}
-              disabled={isCheckingActive}
-              className="gap-1.5 h-8 text-xs cursor-pointer"
+              onClick={() => setCurrentView("landing")}
+              className="text-xs gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              {isCheckingActive ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Search className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-              <span>Check Active</span>
+              <Home className="h-3.5 w-3.5" />
+              Landing
             </Button>
+
+            {currentUser ? (
+              <div className="flex items-center gap-2 pl-2 border-l border-border">
+                <Badge variant="secondary" className="gap-1 font-mono text-xs">
+                  <User className="h-3 w-3" />
+                  {currentUser.username}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-xs gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <LogOut className="h-3 w-3" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 pl-2 border-l border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentView("login")}
+                  className="text-xs gap-1 cursor-pointer"
+                >
+                  <LogIn className="h-3 w-3" />
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentView("register")}
+                  className="text-xs gap-1 cursor-pointer"
+                >
+                  <UserPlus className="h-3 w-3" />
+                  Sign Up
+                </Button>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Form Controls */}
-        <Card className="border-border bg-card/60 backdrop-blur-sm">
+        {/* Input Configuration Card */}
+        <Card className="border-border bg-card/80 backdrop-blur-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Quiz Generation Prompt</CardTitle>
+            <CardTitle className="text-sm font-semibold tracking-wide">
+              Quiz Generation Parameters
+            </CardTitle>
             <CardDescription className="text-xs">
-              Enter quiz topic, instructions, or raw content. Submission dispatches a background job.
+              Configure pedagogical topic, question volume, and cognitive difficulty
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div>
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. '10 multiple-choice questions on Distributed Consensus Algorithms (Raft, Paxos, PBFT)'"
-                className="min-h-[120px] font-mono text-sm resize-y"
-              />
-              <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
-                {prompt.length > 0 && !isPromptValid ? (
-                  <span className="text-amber-400">
-                    Prompt must be at least 20 characters ({prompt.trim().length}/20)
-                  </span>
-                ) : (
-                  <span />
-                )}
-                <span className="text-muted-foreground ml-auto">
-                  {prompt.trim().length} chars
+            {/* Prompt Textarea */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <label htmlFor="prompt-input" className="text-muted-foreground font-medium">
+                  Prompt / Curriculum Focus
+                </label>
+                <span
+                  className={`font-mono text-[11px] ${
+                    isPromptValid ? "text-primary font-medium" : "text-muted-foreground"
+                  }`}
+                >
+                  {promptCharCount} / 20 min chars
                 </span>
               </div>
+              <Textarea
+                id="prompt-input"
+                placeholder="e.g. Modern TypeScript advanced type system, template literal types, conditional types, and distributed union inference with practical software architecture examples"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                disabled={Boolean(isJobActive)}
+                className={`min-h-[110px] text-sm resize-y font-sans transition-colors ${
+                  prompt.length > 0 && !isPromptValid
+                    ? "border-destructive/50 focus-visible:ring-destructive/30"
+                    : ""
+                }`}
+              />
+              {prompt.length > 0 && !isPromptValid && (
+                <p className="text-[11px] text-destructive flex items-center gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  Prompt must be at least 20 characters long.
+                </p>
+              )}
             </div>
 
             {/* Parameter Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1 font-medium">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Question Count */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="question-count-input"
+                  className="text-xs text-muted-foreground font-medium"
+                >
                   Question Count
                 </label>
                 <input
+                  id="question-count-input"
                   type="number"
                   min={0}
                   max={50}
@@ -331,36 +547,39 @@ export default function App() {
                     if (val === "") {
                       setQuestionCount("");
                     } else {
-                      const parsed = parseInt(val, 10);
-                      setQuestionCount(isNaN(parsed) ? "" : parsed);
+                      const num = parseInt(val, 10);
+                      setQuestionCount(isNaN(num) ? "" : num);
                     }
                   }}
-                  className={`w-full h-9 rounded-md border bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 font-mono transition-colors ${
+                  disabled={Boolean(isJobActive)}
+                  className={`w-full rounded-md border bg-background px-3 py-1.5 text-sm font-mono shadow-sm focus:outline-none focus:ring-1 ${
                     !isQuestionCountValid
-                      ? "border-amber-500/70 focus:ring-amber-500 text-amber-200"
-                      : "border-input focus:ring-ring"
+                      ? "border-destructive text-destructive focus:ring-destructive"
+                      : "border-input text-foreground focus:ring-ring"
                   }`}
                 />
-                {(isQuestionCountBelowMin || questionCount === "") && (
-                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
-                    At least 5 questions
-                  </p>
+                {isQuestionCountBelowMin && (
+                  <p className="text-[11px] text-destructive">At least 5 questions</p>
                 )}
                 {isQuestionCountAboveMax && (
-                  <p className="text-[11px] text-amber-400 mt-1 font-mono">
-                    Question count cannot exceed 50.
-                  </p>
+                  <p className="text-[11px] text-destructive">Question count cannot exceed 50.</p>
                 )}
               </div>
 
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1 font-medium">
+              {/* Difficulty */}
+              <div className="space-y-1">
+                <label
+                  htmlFor="difficulty-select"
+                  className="text-xs text-muted-foreground font-medium"
+                >
                   Difficulty
                 </label>
                 <select
+                  id="difficulty-select"
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value as GenerationDifficulty)}
-                  className="w-full h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono"
+                  disabled={Boolean(isJobActive)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
@@ -370,14 +589,17 @@ export default function App() {
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1 font-medium">
+              {/* Mode */}
+              <div className="space-y-1">
+                <label htmlFor="mode-select" className="text-xs text-muted-foreground font-medium">
                   Mode
                 </label>
                 <select
+                  id="mode-select"
                   value={mode}
                   onChange={(e) => setMode(e.target.value as "learning" | "assessment")}
-                  className="w-full h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring font-mono"
+                  disabled={Boolean(isJobActive)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="assessment">Assessment</option>
                   <option value="learning">Learning</option>
@@ -386,78 +608,86 @@ export default function App() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={
-                    isSubmitting ||
-                    !isPromptValid ||
-                    Boolean(isJobActive) ||
-                    !isQuestionCountValid
-                  }
-                  onClick={handleSubmit}
-                  className="gap-1.5 h-9 text-xs cursor-pointer font-medium"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Submitting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-3.5 w-3.5 fill-current" />
-                      <span>Submit Job</span>
-                    </>
-                  )}
-                </Button>
+            <div className="pt-2 flex flex-wrap items-center gap-2.5">
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={
+                  !isPromptValid ||
+                  !isQuestionCountValid ||
+                  !prompt.trim() ||
+                  isSubmitting ||
+                  Boolean(isJobActive)
+                }
+                className="gap-2 cursor-pointer font-medium"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4" /> Start Generation
+                  </>
+                )}
+              </Button>
 
+              {isJobActive && (
                 <Button
                   type="button"
                   variant="destructive"
-                  size="sm"
-                  disabled={!isJobActive || isCancelling}
                   onClick={handleCancel}
-                  className="gap-1.5 h-9 text-xs cursor-pointer font-medium"
+                  disabled={isCancelling || jobStatus?.status === "cancel_requested"}
+                  className="gap-2 cursor-pointer"
                 >
                   {isCancelling ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Cancelling...</span>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Cancelling...
                     </>
                   ) : (
                     <>
-                      <Square className="h-3.5 w-3.5 fill-current" />
-                      <span>Cancel Job</span>
+                      <Square className="h-4 w-4" /> Cancel Job
                     </>
                   )}
                 </Button>
-              </div>
+              )}
 
-              <div className="flex items-center gap-2">
-                {Boolean(rawOutput) && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClear}
-                    className="gap-1.5 h-8 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    <span>Clear</span>
-                  </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCheckActive}
+                disabled={isCheckingActive}
+                className="gap-2 text-xs cursor-pointer ml-auto"
+              >
+                {isCheckingActive ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
-              </div>
+                Check Active Job
+              </Button>
+
+              {(rawOutput || jobStatus) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleClear}
+                  className="gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Clear
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Error Notification */}
-        {errorMessage && (
+        {(errorMessage || (jobStatus?.status === "failed" && jobStatus.error?.message)) && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3.5 flex items-center gap-3 text-destructive-foreground text-xs">
             <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
-            <p className="font-mono">{errorMessage}</p>
+            <p className="font-mono font-medium">
+              {errorMessage || jobStatus?.error?.message}
+            </p>
           </div>
         )}
 
@@ -483,6 +713,12 @@ export default function App() {
                     {jobStatus.acceptedQuestionCount} / {jobStatus.plannedQuestionCount}
                   </span>
                 </div>
+                <Badge
+                  variant={getStatusBadgeVariant(jobStatus.status) as "default"}
+                  className="capitalize font-mono text-[10px]"
+                >
+                  {jobStatus.status}
+                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -508,29 +744,23 @@ export default function App() {
               >
                 {copied ? (
                   <>
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    <span className="text-emerald-400">Copied</span>
+                    <Check className="h-3.5 w-3.5 text-primary" /> Copied
                   </>
                 ) : (
                   <>
-                    <Copy className="h-3 w-3 text-muted-foreground" />
-                    <span>Copy JSON</span>
+                    <Copy className="h-3.5 w-3.5 text-muted-foreground" /> Copy JSON
                   </>
                 )}
               </Button>
             )}
           </CardHeader>
 
-          <CardContent className="p-0">
-            {rawOutput ? (
-              <pre className="p-4 text-xs font-mono overflow-x-auto max-h-[460px] text-foreground/90 whitespace-pre leading-relaxed select-text">
-                {JSON.stringify(rawOutput, null, 2)}
-              </pre>
-            ) : (
-              <div className="p-8 text-center text-xs text-muted-foreground font-mono">
-                No output yet. Enter a prompt and submit to view live API response payload.
-              </div>
-            )}
+          <CardContent className="p-4">
+            <pre className="font-mono text-xs overflow-x-auto max-h-[420px] rounded-md bg-muted/20 p-3 border border-border/40 text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              {rawOutput
+                ? JSON.stringify(rawOutput, null, 2)
+                : '// Output from "Start Generation" or "Check Active Job" will appear here.\n// Polling updates every 1.5s during background inference.'}
+            </pre>
           </CardContent>
         </Card>
       </div>

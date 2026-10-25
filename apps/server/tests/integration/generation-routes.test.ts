@@ -132,4 +132,49 @@ describe("Quiz Generation API Endpoints", () => {
     // Clean up
     await pool.query("DELETE FROM generation_jobs WHERE id = $1;", [body1.jobId]);
   });
+
+  it("returns critic error details when polling a failed job with TOPIC_REJECTED_GIBBERISH", async () => {
+    const key = "99999999-9999-9999-9999-999999999999";
+    const subRes = await app.inject({
+      method: "POST",
+      url: "/api/quiz-generations",
+      headers: { "x-user-id": testUserId },
+      payload: {
+        idempotencyKey: key,
+        prompt: "quantum banana database photosynthesis",
+        mode: "learning",
+        difficulty: "easy",
+        questionCount: 5,
+      },
+    });
+
+    const { jobId } = JSON.parse(subRes.body);
+
+    // Simulate worker failing job due to rejection
+    const criticMessage = "That doesn't look like a real topic.";
+    await pool.query(
+      `UPDATE generation_jobs
+       SET status = 'failed',
+           last_error_code = 'TOPIC_REJECTED',
+           last_error_message = $2
+       WHERE id = $1;`,
+      [jobId, criticMessage]
+    );
+
+    const pollRes = await app.inject({
+      method: "GET",
+      url: `/api/quiz-generations/${jobId}`,
+      headers: { "x-user-id": testUserId },
+    });
+
+    expect(pollRes.statusCode).toBe(200);
+    const body = JSON.parse(pollRes.body);
+    expect(body.status).toBe("failed");
+    expect(body.error).not.toBeNull();
+    expect(body.error.code).toBe("TOPIC_REJECTED");
+    expect(body.error.message).toBe(criticMessage);
+
+    // Clean up
+    await pool.query("DELETE FROM generation_jobs WHERE id = $1;", [jobId]);
+  });
 });

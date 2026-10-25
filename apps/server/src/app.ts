@@ -9,6 +9,7 @@ import { quizRoutes } from "./modules/quizzes/routes.js";
 import { attemptRoutes } from "./modules/attempts/routes.js";
 import { generatorRoutes } from "./modules/generator/routes.js";
 import { generationRoutes } from "./modules/generation/generation.routes.js";
+import { authRoutes } from "./modules/auth/auth.routes.js";
 import { docsRoutes } from "./modules/docs/routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -48,6 +49,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // API Domain Routes
   await app.register(quizRoutes, { prefix: "/api" });
   await app.register(attemptRoutes, { prefix: "/api" });
+  await app.register(authRoutes, { prefix: "/api" });
   await app.register(generatorRoutes, { prefix: "/api" });
   await app.register(generationRoutes, { prefix: "/api" });
 

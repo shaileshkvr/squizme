@@ -19,19 +19,23 @@ describe("Database Migrator", () => {
     const names = migrationRows.map((r) => r.name);
     expect(names).toContain("001_initial_schema.sql");
     expect(names).toContain("002_generation_jobs.sql");
+    expect(names).toContain("003_add_last_error_message.sql");
+    expect(names).toContain("004_auth_users_and_sessions.sql");
 
     // Verify generation_jobs table exists with correct columns
     const { rows: tableRows } = await pool.query(`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-        AND table_name IN ('quizzes', 'attempts', 'generation_jobs', 'generation_job_batches');
+        AND table_name IN ('quizzes', 'attempts', 'generation_jobs', 'generation_job_batches', 'users', 'user_sessions');
     `);
     const tableNames = tableRows.map((r) => r.table_name);
     expect(tableNames).toContain("quizzes");
     expect(tableNames).toContain("attempts");
     expect(tableNames).toContain("generation_jobs");
     expect(tableNames).toContain("generation_job_batches");
+    expect(tableNames).toContain("users");
+    expect(tableNames).toContain("user_sessions");
 
     // Second run - should be a no-op and return empty array
     const secondRun = await runMigrations(pool);

@@ -50,6 +50,32 @@ export const TopicPlanSchema = z.object({
   totalQuestionCount: z.number().int().positive(),
 });
 
+export const ModelTopicOutputSchema = z.object({
+  name: z.string().trim().min(1, "Topic name cannot be empty"),
+  questionCount: z.coerce.number().int().positive("Question count must be positive"),
+});
+
+export const ModelCurriculumPlanOutputSchema = z.object({
+  topics: z.array(ModelTopicOutputSchema).min(1, "Plan must contain at least one topic"),
+});
+
+export const ModelQuestionOptionOutputSchema = z.object({
+  id: z.string().optional(),
+  text: z.string().trim().min(1, "Option text cannot be empty"),
+  isCorrect: z.boolean(),
+});
+
+export const ModelQuestionItemOutputSchema = z.object({
+  prompt: z.string().trim().min(1, "Question prompt cannot be empty"),
+  topic: z.string().trim().min(1, "Topic name cannot be empty"),
+  options: z.array(ModelQuestionOptionOutputSchema).min(2, "Question must have at least 2 options"),
+  explanation: z.string().trim().optional(),
+});
+
+export const ModelBatchQuestionsOutputSchema = z.object({
+  questions: z.array(ModelQuestionItemOutputSchema),
+});
+
 export const JobErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -74,5 +100,10 @@ export type GenerationDifficulty = z.infer<typeof GenerationDifficultySchema>;
 export type GenerationRequest = z.infer<typeof GenerationRequestSchema>;
 export type TopicAllocation = z.infer<typeof TopicAllocationSchema>;
 export type TopicPlan = z.infer<typeof TopicPlanSchema>;
+export type ModelTopicOutput = z.infer<typeof ModelTopicOutputSchema>;
+export type ModelCurriculumPlanOutput = z.infer<typeof ModelCurriculumPlanOutputSchema>;
+export type ModelQuestionOptionOutput = z.infer<typeof ModelQuestionOptionOutputSchema>;
+export type ModelQuestionItemOutput = z.infer<typeof ModelQuestionItemOutputSchema>;
+export type ModelBatchQuestionsOutput = z.infer<typeof ModelBatchQuestionsOutputSchema>;
 export type JobError = z.infer<typeof JobErrorSchema>;
 export type JobStatusResponse = z.infer<typeof JobStatusResponseSchema>;

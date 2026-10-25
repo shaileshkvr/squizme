@@ -111,6 +111,36 @@ describe("Generation Worker End-to-End Execution", () => {
 
     // Clean up
     await pool.query("DELETE FROM generation_jobs WHERE id = $1;", [job.id]);
-    await pool.query("DELETE FROM quizzes WHERE id = $1;", [finishedJob!.quiz_id]);
+    await pool.query("DELETE FROM quizzes WHERE id = $1;", [finishedJob!.quizId || finishedJob!.quiz_id]);
+  });
+
+  it("aborts worker execution and fails job immediately when topic is obvious non-content", async () => {
+    const key = "77777777-7777-7777-7777-777777777777";
+    const { job } = await createGenerationJob(pool, testUserId, {
+      idempotencyKey: key,
+      prompt: "aaaaaaaaaaaaaaaaaaaaaa",
+      mode: "learning",
+      difficulty: "easy",
+      questionCount: 5,
+    });
+
+    // No LLM mock needed — the deterministic pre-flight catches this
+    const worker = new GenerationWorker(pool, "test-worker-rejection", {} as Groq);
+    const didWork = await worker.runOnce();
+
+    expect(didWork).toBe(true);
+
+    const rejectedJob = await getJobById(pool, job.id);
+    expect(rejectedJob).not.toBeNull();
+    expect(rejectedJob!.status).toBe("failed");
+    expect(rejectedJob!.last_error_code).toBe("TOPIC_REJECTED");
+    expect(rejectedJob!.last_error_message).toBe(
+      "That doesn't look like a real topic."
+    );
+    expect(rejectedJob!.completed_batch_count).toBe(0);
+    expect(rejectedJob!.quiz_id).toBeNull();
+
+    // Clean up
+    await pool.query("DELETE FROM generation_jobs WHERE id = $1;", [job.id]);
   });
 });
